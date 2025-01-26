@@ -7,6 +7,7 @@ import { createProxy } from './build/proxy'
 import { createVitePlugins } from './build/plugins'
 import pkg from './package.json'
 import dayjs from 'dayjs'
+import tailwindcss from '@tailwindcss/vite'
 
 const { dependencies, devDependencies, name, version } = pkg
 const __APP_INFO__ = {
@@ -78,6 +79,3 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
     },
   }
 })
-function tailwindcss(): import('vite').PluginOption {
-  throw new Error('Function not implemented.')
-}
