@@ -46,7 +46,7 @@ import ProTable from '@/components/ProTable/index.vue'
 import ImportExcel from '@/components/ImportExcel/index.vue'
 import { ProTableInstance, ColumnProps } from '@/components/ProTable/interface'
 import { CirclePlus, Delete, Download, Refresh } from '@element-plus/icons-vue'
-import { getUserList, deleteUser, resetUserPassWord, exportUserInfo, BatchAddUser } from '@/api/modules/user'
+import { getUserListApi, deleteUser, resetUserPassWord, exportUserInfo, BatchAddUser } from '@/api/modules/user'
 import UserDialog from './components/userDialog.vue'
 
 // ProTable 实例
@@ -69,7 +69,7 @@ const getTableList = (params: any) => {
   newParams.createTime && (newParams.startTime = newParams.createTime[0])
   newParams.createTime && (newParams.endTime = newParams.createTime[1])
   delete newParams.createTime
-  return getUserList({ pageNum: newParams.pageNum, pageSize: newParams.pageSize })
+  return getUserListApi({ pageNum: newParams.pageNum, pageSize: newParams.pageSize })
 }
 
 // 表格配置项
@@ -117,7 +117,7 @@ const sortTable = ({ newIndex, oldIndex }: { newIndex?: number; oldIndex?: numbe
 
 // 删除用户信息
 const deleteAccount = async (params: User.ResUserList) => {
-  await useHandleData(deleteUser, { id: [params.id] }, `删除【${params.username}】用户`)
+  await useHandleData(deleteUser, { id: params.id }, `删除【${params.username}】用户`)
   proTable.value?.getTableList()
 }
 
@@ -156,6 +156,6 @@ const batchAdd = () => {
 //新增管理员
 const userDialogRef = ref<InstanceType<typeof UserDialog> | null>(null)
 const openDialog = () => {
-  userDialogRef.value?.open()
+  userDialogRef.value?.acceptParams({ getTableList: proTable.value?.getTableList })
 }
 </script>

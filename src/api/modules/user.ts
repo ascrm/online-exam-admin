@@ -8,7 +8,7 @@ import http from '@/api'
  * @name 用户管理模块
  */
 // 获取用户列表
-export const getUserList = (params: { pageNum: number; pageSize: number }) => {
+export const getUserListApi = (params: { pageNum: number; pageSize: number }) => {
   return http.get<ResPage<User.ResUserList>>(PORT1 + `/users`, params)
 }
 
@@ -38,8 +38,8 @@ export const editUser = (params: { id: string }) => {
 }
 
 // 删除用户
-export const deleteUser = (params: { id: string[] }) => {
-  return http.post(PORT1 + `/user/delete`, params)
+export const deleteUser = (params: { id: number }) => {
+  return http.delete(PORT1 + `/user/${params.id}`)
 }
 
 // 切换用户状态
@@ -48,8 +48,8 @@ export const changeUserStatus = (params: { id: string; status: number }) => {
 }
 
 // 重置用户密码
-export const resetUserPassWord = (params: { id: string }) => {
-  return http.post(PORT1 + `/user/rest_password`, params)
+export const resetUserPassWord = (params: { id: number }) => {
+  return http.put(PORT1 + `/user/${params.id}`)
 }
 
 // 导出用户数据
