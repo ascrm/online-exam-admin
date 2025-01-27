@@ -14,6 +14,20 @@
         "isAffix": true,
         "isKeepAlive": true
       }
+    },
+    {
+      "path": "/userManage/index",
+      "name": "userManage",
+      "component": "/userManage/index",
+      "meta": {
+        "icon": "Menu",
+        "title": "用户管理",
+        "isLink": "",
+        "isHide": false,
+        "isFull": false,
+        "isAffix": true,
+        "isKeepAlive": true
+      }
     }
   ],
   "msg": "请求成功"
