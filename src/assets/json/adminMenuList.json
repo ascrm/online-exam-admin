@@ -16,6 +16,20 @@
       }
     },
     {
+      "path": "/examPaperManage/index",
+      "name": "examPaperManage",
+      "component": "/examPaperManage/index",
+      "meta": {
+        "icon": "Menu",
+        "title": "试卷管理",
+        "isLink": "",
+        "isHide": false,
+        "isFull": false,
+        "isAffix": true,
+        "isKeepAlive": true
+      }
+    },
+    {
       "path": "/userManage/index",
       "name": "userManage",
       "component": "/userManage/index",

@@ -38,12 +38,6 @@ export namespace Login {
     username: string
     password: string
   }
-  export interface ResLogin {
-    access_token: string
-  }
-  export interface ResAuthButtons {
-    [key: string]: string[]
-  }
 }
 
 // 用户管理模块
@@ -68,23 +62,5 @@ export namespace User {
     email: string
     phone: string
     createTime: string
-  }
-  export interface ResStatus {
-    userLabel: string
-    userValue: number
-  }
-  export interface ResGender {
-    genderLabel: string
-    genderValue: number
-  }
-  export interface ResDepartment {
-    id: string
-    name: string
-    children?: ResDepartment[]
-  }
-  export interface ResRole {
-    id: string
-    name: string
-    children?: ResDepartment[]
   }
 }
