@@ -12,7 +12,6 @@
       <!-- 表格 header 按钮 -->
       <template #tableHeader="scope">
         <el-button type="primary" :icon="CirclePlus" @click="openDialog('新增')">新增试卷</el-button>
-        <el-button type="primary" :icon="Download" plain @click="downloadFile">导出试卷数据</el-button>
         <el-button
           type="danger"
           :icon="Delete"
@@ -40,13 +39,10 @@
 import { ref, reactive } from 'vue'
 import { User } from '@/api/interface'
 import { useHandleData } from '@/hooks/useHandleData'
-import { useDownload } from '@/hooks/useDownload'
-import { ElMessageBox } from 'element-plus'
 import ProTable from '@/components/ProTable/index.vue'
 import ImportExcel from '@/components/ImportExcel/index.vue'
 import { ProTableInstance, ColumnProps } from '@/components/ProTable/interface'
-import { CirclePlus, Delete, Download, EditPen } from '@element-plus/icons-vue'
-import { exportUserInfoApi } from '@/api/modules/user'
+import { CirclePlus, Delete, EditPen } from '@element-plus/icons-vue'
 import {
   addExamPaperApi,
   batchDelExamPaperApi,
@@ -61,8 +57,6 @@ const proTable = ref<ProTableInstance>()
 
 // 如果表格需要初始化请求参数，直接定义传给 ProTable (之后每次请求都会自动带上该参数，此参数更改之后也会一直带上，改变此参数会自动刷新表格数据)
 const initParam = reactive({ type: 1 })
-
-// 或者直接去 hooks/useTable.ts 文件中把字段改为你后端对应的就行
 const dataCallback = (data: any) => {
   return {
     list: data.list,
@@ -87,42 +81,13 @@ const columns = reactive<ColumnProps<User.ResUserList>[]>([
     label: '试卷名称',
     search: { el: 'input', tooltip: '我是搜索提示' },
   },
-  {
-    prop: 'duration',
-    label: '考试时长',
-  },
-  {
-    prop: 'totalScore',
-    label: '总分',
-  },
+  { prop: 'duration', label: '考试时长' },
+  { prop: 'totalScore', label: '总分' },
   { prop: 'passingScore', label: '及格分数' },
   { prop: 'isPublishedLabel', label: '是否发布' },
-  {
-    prop: 'description',
-    label: '备注',
-  },
-  {
-    prop: 'createdAt',
-    label: '创建时间',
-    width: 200,
-    search: {
-      el: 'date-picker',
-      span: 2,
-      props: { type: 'datetimerange', valueFormat: 'YYYY-MM-DD HH:mm:ss' },
-      defaultValue: ['2022-11-12 11:35:00', '2022-12-12 11:35:00'],
-    },
-  },
-  {
-    prop: 'updatedAt',
-    label: '修改时间',
-    width: 200,
-    search: {
-      el: 'date-picker',
-      span: 2,
-      props: { type: 'datetimerange', valueFormat: 'YYYY-MM-DD HH:mm:ss' },
-      defaultValue: ['2022-11-12 11:35:00', '2022-12-12 11:35:00'],
-    },
-  },
+  { prop: 'description', label: '备注' },
+  { prop: 'createdAt', label: '创建时间', width: 200 },
+  { prop: 'updatedAt', label: '修改时间', width: 200 },
   { prop: 'operation', label: '操作', fixed: 'right', width: 200 },
 ])
 
@@ -139,14 +104,7 @@ const batchDelete = async (ids: string[]) => {
   proTable.value?.getTableList()
 }
 
-// 导出试卷列表
-const downloadFile = async () => {
-  ElMessageBox.confirm('确认导出试卷数据?', '温馨提示', { type: 'warning' }).then(() =>
-    useDownload(exportUserInfoApi, '试卷列表', proTable.value?.searchParam),
-  )
-}
-
-//新增试卷
+//新增-编辑试卷
 const dialogRef = ref<InstanceType<typeof ExamPaperDialog> | null>(null)
 const openDialog = (title: string, row: any = {}) => {
   const params = {
