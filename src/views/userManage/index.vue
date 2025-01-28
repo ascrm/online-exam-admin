@@ -51,7 +51,7 @@ import {
   deleteUserApi,
   resetUserPassWordApi,
   exportUserInfoApi,
-  BatchAddUserApi,
+  batchDelUserApi,
 } from '@/api/modules/user'
 import UserDialog from './components/userDialog.vue'
 
@@ -128,8 +128,8 @@ const deleteAccount = async (params: User.ResUserList) => {
 }
 
 // 批量删除用户信息
-const batchDelete = async (id: string[]) => {
-  await useHandleData(deleteUserApi, { id }, '删除所选用户信息')
+const batchDelete = async (ids: string[]) => {
+  await useHandleData(batchDelUserApi, { idsStr: ids.join(',') }, '删除所选用户信息')
   proTable.value?.clearSelection()
   proTable.value?.getTableList()
 }

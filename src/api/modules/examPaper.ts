@@ -2,6 +2,7 @@
 
 import { PORT1 } from '@/api/config/servicePort'
 import http from '@/api'
+import qs from 'qs'
 
 //分页查询试卷列表
 export const getExamPaperListApi = (params: { pageNum: number; pageSize: number }) =>
@@ -14,4 +15,7 @@ export const addExamPaperApi = (params: any) => http.post(PORT1 + `/examPaper`, 
 export const editExamPaperApi = (params: any) => http.put(PORT1 + `/examPaper`, params)
 
 //删除试卷
-export const deleteExamPaperApi = (params: any) => http.delete(PORT1 + `/examPaper/${params.id}`)
+export const deleteExamPaperApi = (params: any) => http.delete(PORT1 + `/examPaper`, params)
+
+//批量删除试卷信息
+export const batchDelExamPaperApi = (params: any) => http.delete(PORT1 + `/examPapers`, params)

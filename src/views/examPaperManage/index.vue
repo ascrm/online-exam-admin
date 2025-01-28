@@ -8,12 +8,11 @@
       :request-api="getTableList"
       :init-param="initParam"
       :data-callback="dataCallback"
-      @drag-sort="sortTable"
     >
       <!-- 表格 header 按钮 -->
       <template #tableHeader="scope">
         <el-button type="primary" :icon="CirclePlus" @click="openDialog('新增')">新增试卷</el-button>
-        <el-button type="primary" :icon="Download" plain @click="downloadFile">导出用户数据</el-button>
+        <el-button type="primary" :icon="Download" plain @click="downloadFile">导出试卷数据</el-button>
         <el-button
           type="danger"
           :icon="Delete"
@@ -21,7 +20,7 @@
           :disabled="!scope.isSelected"
           @click="batchDelete(scope.selectedListIds)"
         >
-          批量删除用户
+          批量删除试卷
         </el-button>
       </template>
 
@@ -42,15 +41,20 @@ import { ref, reactive } from 'vue'
 import { User } from '@/api/interface'
 import { useHandleData } from '@/hooks/useHandleData'
 import { useDownload } from '@/hooks/useDownload'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import ProTable from '@/components/ProTable/index.vue'
 import ImportExcel from '@/components/ImportExcel/index.vue'
 import { ProTableInstance, ColumnProps } from '@/components/ProTable/interface'
-import { CirclePlus, Delete, Download, EditPen, Refresh } from '@element-plus/icons-vue'
-import { deleteUserApi, resetUserPassWordApi, exportUserInfoApi, BatchAddUserApi } from '@/api/modules/user'
-import { addExamPaperApi, deleteExamPaperApi, editExamPaperApi, getExamPaperListApi } from '@/api/modules/examPaper'
+import { CirclePlus, Delete, Download, EditPen } from '@element-plus/icons-vue'
+import { exportUserInfoApi } from '@/api/modules/user'
+import {
+  addExamPaperApi,
+  batchDelExamPaperApi,
+  deleteExamPaperApi,
+  editExamPaperApi,
+  getExamPaperListApi,
+} from '@/api/modules/examPaper'
 import ExamPaperDialog from './components/examPaperDialog.vue'
-import api from '@/api'
 
 // ProTable 实例
 const proTable = ref<ProTableInstance>()
@@ -122,28 +126,23 @@ const columns = reactive<ColumnProps<User.ResUserList>[]>([
   { prop: 'operation', label: '操作', fixed: 'right', width: 200 },
 ])
 
-// 表格拖拽排序
-const sortTable = ({ newIndex, oldIndex }: { newIndex?: number; oldIndex?: number }) => {
-  ElMessage.success('修改列表排序成功')
-}
-
-// 删除用户信息
+// 删除试卷信息
 const deleteAccount = async (params: User.ResUserList) => {
-  await useHandleData(deleteExamPaperApi, { id: params.id }, `删除【${params.username}】用户`)
+  await useHandleData(deleteExamPaperApi, { id: params.id }, `删除【${params.username}】试卷`)
   proTable.value?.getTableList()
 }
 
-// 批量删除用户信息
-const batchDelete = async (id: string[]) => {
-  await useHandleData(deleteUserApi, { id }, '删除所选用户信息')
+// 批量删除试卷信息
+const batchDelete = async (ids: string[]) => {
+  await useHandleData(batchDelExamPaperApi, { idsStr: ids.join() }, '删除所选试卷信息')
   proTable.value?.clearSelection()
   proTable.value?.getTableList()
 }
 
-// 导出用户列表
+// 导出试卷列表
 const downloadFile = async () => {
-  ElMessageBox.confirm('确认导出用户数据?', '温馨提示', { type: 'warning' }).then(() =>
-    useDownload(exportUserInfoApi, '用户列表', proTable.value?.searchParam),
+  ElMessageBox.confirm('确认导出试卷数据?', '温馨提示', { type: 'warning' }).then(() =>
+    useDownload(exportUserInfoApi, '试卷列表', proTable.value?.searchParam),
   )
 }
 

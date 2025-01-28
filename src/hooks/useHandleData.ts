@@ -25,7 +25,6 @@ export const useHandleData = (
       draggable: true,
     })
       .then(async () => {
-        console.log('参数：', params.id)
         const res = await api(params)
         if (!res) return reject(false)
         ElMessage({
