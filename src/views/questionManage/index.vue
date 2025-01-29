@@ -47,7 +47,7 @@ import { ProTableInstance, ColumnProps } from '@/components/ProTable/interface'
 import { CirclePlus, Delete, EditPen, View } from '@element-plus/icons-vue'
 import { batchDelExamPaperApi, editExamPaperApi } from '@/api/modules/examPaper'
 import QuestionDialog from './components/questionDialog.vue'
-import { addQuestionApi, deleteQuestionApi, getQuestionListApi } from '@/api/modules/question'
+import { addQuestionApi, batchDelQuestionApi, deleteQuestionApi, getQuestionListApi } from '@/api/modules/question'
 
 // ProTable 实例
 const proTable = ref<ProTableInstance>()
@@ -96,7 +96,7 @@ const deleteAccount = async (params: any) => {
 
 // 批量删除题目信息
 const batchDelete = async (ids: string[]) => {
-  await useHandleData(batchDelExamPaperApi, { idsStr: ids.join() }, '删除所选题目信息')
+  await useHandleData(batchDelQuestionApi, { ids: ids.join(',') }, '删除所选题目信息')
   proTable.value?.clearSelection()
   proTable.value?.getTableList()
 }

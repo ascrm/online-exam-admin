@@ -11,3 +11,6 @@ export const addQuestionApi = (params: any) => http.post(PORT1 + `/question`, pa
 
 //删除题目
 export const deleteQuestionApi = (params: any) => http.delete(PORT1 + `/question`, params)
+
+//批量删除题目
+export const batchDelQuestionApi = (params: any) => http.delete(PORT1 + `/questions`, params)

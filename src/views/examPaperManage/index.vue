@@ -99,7 +99,7 @@ const deleteAccount = async (params: User.ResUserList) => {
 
 // 批量删除试卷信息
 const batchDelete = async (ids: string[]) => {
-  await useHandleData(batchDelExamPaperApi, { idsStr: ids.join() }, '删除所选试卷信息')
+  await useHandleData(batchDelExamPaperApi, { ids: ids.join(',') }, '删除所选试卷信息')
   proTable.value?.clearSelection()
   proTable.value?.getTableList()
 }
