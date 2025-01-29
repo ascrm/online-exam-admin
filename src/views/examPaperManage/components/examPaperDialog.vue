@@ -42,7 +42,6 @@ const submitHandler = async () => {
       if (dialogParams.value.row.updatedAt != null)
         dialogParams.value.row.updatedAt = dialogParams.value.row.updatedAt.split(' ').join('T')
 
-      console.log(dialogParams.value.row.isPublished)
       await dialogParams.value.api!(dialogParams.value.row)
       ElMessage.success({ message: `${dialogParams.value.title}用户成功！` })
       dialogParams.value.getTableList!()

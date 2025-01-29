@@ -25,10 +25,8 @@
 
       <!-- 表格操作 -->
       <template #operation="scope">
-        <el-button type="primary" link :icon="View">查看详情</el-button>
-
+        <el-button type="primary" link :icon="View" @click="openDialog(undefined, scope.row, true)">查看详情</el-button>
         <el-button type="primary" link :icon="EditPen" @click="openDialog('编辑', scope.row)">编辑</el-button>
-
         <el-button type="primary" link :icon="Delete" @click="deleteAccount(scope.row)">删除</el-button>
       </template>
     </ProTable>
@@ -45,9 +43,14 @@ import ProTable from '@/components/ProTable/index.vue'
 import ImportExcel from '@/components/ImportExcel/index.vue'
 import { ProTableInstance, ColumnProps } from '@/components/ProTable/interface'
 import { CirclePlus, Delete, EditPen, View } from '@element-plus/icons-vue'
-import { batchDelExamPaperApi, editExamPaperApi } from '@/api/modules/examPaper'
 import QuestionDialog from './components/questionDialog.vue'
-import { addQuestionApi, batchDelQuestionApi, deleteQuestionApi, getQuestionListApi } from '@/api/modules/question'
+import {
+  addQuestionApi,
+  batchDelQuestionApi,
+  deleteQuestionApi,
+  editQuestionApi,
+  getQuestionListApi,
+} from '@/api/modules/question'
 
 // ProTable 实例
 const proTable = ref<ProTableInstance>()
@@ -103,12 +106,13 @@ const batchDelete = async (ids: string[]) => {
 
 //新增-编辑题目
 const dialogRef = ref<InstanceType<typeof QuestionDialog> | null>(null)
-const openDialog = (title: string, row: any = {}) => {
+const openDialog = (title: string = '', row: any = {}, isView: boolean = false) => {
   const params = {
     title,
     row: { ...row },
-    api: title === '新增' ? addQuestionApi : editExamPaperApi,
+    api: title === '新增' ? addQuestionApi : editQuestionApi,
     getTableList: proTable.value?.getTableList,
+    isView,
   }
   dialogRef.value?.acceptParams(params)
 }

@@ -16,10 +16,10 @@ const props = defineProps({
     required: true,
     type: Object as PropType<{
       title: string
-
       row: any
       api?: (params: any) => Promise<any>
       getTableList: () => void
+      isView: boolean
     }>,
   },
 })
@@ -71,7 +71,14 @@ const exitDialog = () => {
 
 <template>
   <div>
-    <el-form ref="ruleFormRef" :rules="rules" label-width="120px" label-suffix=" :" :model="props.dialogParams.row">
+    <el-form
+      ref="ruleFormRef"
+      :disabled="props.dialogParams.isView"
+      :rules="rules"
+      label-width="120px"
+      label-suffix=" :"
+      :model="props.dialogParams.row"
+    >
       <el-form-item label="题目名称" prop="name">
         <el-input v-model="props.dialogParams.row.name" autocomplete="off" />
       </el-form-item>
