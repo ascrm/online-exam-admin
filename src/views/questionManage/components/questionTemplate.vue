@@ -3,12 +3,20 @@
 <script setup lang="ts">
 import { ElMessage, FormInstance } from 'element-plus'
 import { PropType, reactive, ref } from 'vue'
+import SingleDialog from './singleDialog.vue'
+import MultipleDialog from './multipleDialog.vue'
+import JudgeDialog from './judgeDialog.vue'
 
 const props = defineProps({
+  questionType: {
+    required: true,
+    type: Number,
+  },
   dialogParams: {
     required: true,
     type: Object as PropType<{
       title: string
+
       row: any
       api?: (params: any) => Promise<any>
       getTableList: () => void
@@ -36,11 +44,12 @@ const submitHandler = async () => {
     try {
       if (props.dialogParams.row.createdAt != null)
         props.dialogParams.row.createdAt = props.dialogParams.row.createdAt.split(' ').join('T')
-
       if (props.dialogParams.row.updatedAt != null)
         props.dialogParams.row.updatedAt = props.dialogParams.row.updatedAt.split(' ').join('T')
+      if (props.dialogParams.row.answer instanceof Array)
+        props.dialogParams.row.answer = props.dialogParams.row.answer.join(',')
 
-      if (props.dialogParams.row.questionType == null) props.dialogParams.row.questionType = 1
+      props.dialogParams.row.questionType = props.questionType
       await props.dialogParams.api!(props.dialogParams.row)
       ElMessage.success({ message: `${props.dialogParams.title}题目成功！` })
       props.dialogParams.getTableList!()
@@ -69,7 +78,9 @@ const exitDialog = () => {
       <el-form-item label="题干" prop="description">
         <el-input type="textarea" :rows="5" resize="none" v-model="props.dialogParams.row.description" />
       </el-form-item>
-      <slot name="dynamics-form-item"></slot>
+      <SingleDialog v-if="props.questionType === 1" :row="props.dialogParams.row"></SingleDialog>
+      <MultipleDialog v-if="props.questionType === 2" :row="props.dialogParams.row"></MultipleDialog>
+      <JudgeDialog v-if="props.questionType === 3" :row="props.dialogParams.row"></JudgeDialog>
       <el-form-item label="题目分数" prop="score">
         <el-input-number v-model="props.dialogParams.row.score" :min="0" :max="20" :step="2" />
       </el-form-item>
