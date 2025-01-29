@@ -5,9 +5,11 @@ import { ElMessage, FormInstance } from 'element-plus'
 import { reactive, ref } from 'vue'
 
 const rules = reactive({
-  name: [{ required: true, message: '请输入试卷名称' }],
-  duration: [{ required: true, message: '请输入考试时长' }],
-  isPublished: [{ required: true, message: '请选择是否发布' }],
+  name: [{ required: true, message: '请输入题目名称' }],
+  description: [{ required: true, message: '请输入题干内容' }],
+  answer: [{ required: true, message: '请选择正确答案' }],
+  score: [{ required: true, message: '请输入题目分数' }],
+  difficulty: [{ required: true, message: '请选择题目难度' }],
 })
 
 interface dialogProps {
@@ -30,8 +32,11 @@ const acceptParams = (params: any) => {
   dialogParams.value = params
 }
 
+const radio = ref()
+
 //提交数据
 const ruleFormRef = ref<FormInstance>()
+
 const submitHandler = async () => {
   ruleFormRef.value!.validate(async valid => {
     if (!valid) return
@@ -60,25 +65,37 @@ defineExpose({
 
 <template>
   <div>
-    <el-form ref="ruleFormRef" :rules="rules" label-width="100px" label-suffix=" :" :model="dialogParams.row">
-      <el-form-item label="试卷名称" prop="name">
+    <el-form ref="ruleFormRef" :rules="rules" label-width="120px" label-suffix=" :" :model="dialogParams.row">
+      <el-form-item label="题目名称" prop="name">
         <el-input v-model="dialogParams.row.name" autocomplete="off" />
       </el-form-item>
-      <el-form-item label="考试时长" prop="duration">
-        <el-input-number v-model="dialogParams.row.duration" :min="0" :max="180" :step="10" />
+      <el-form-item label="题干" prop="description">
+        <el-input type="textarea" :rows="5" resize="none" v-model="dialogParams.row.description" />
       </el-form-item>
-      <el-form-item label="是否发布" prop="isPublished">
-        <el-select v-model="dialogParams.row.isPublished">
-          <el-option label="已发布" value="1"></el-option>
-          <el-option label="未发布" value="0"></el-option>
+      <el-form-item label="正确答案" prop="answer">
+        <el-radio-group v-model="radio">
+          <el-radio label="T" value="T"></el-radio>
+          <el-radio label="F" value="F"></el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="题目分数" prop="score">
+        <el-input-number v-model="dialogParams.row.score" :min="0" :max="20" :step="2" />
+      </el-form-item>
+      <el-form-item label="难度" prop="difficulty">
+        <el-select v-model="dialogParams.row.difficulty">
+          <el-option label="入门" value="1"></el-option>
+          <el-option label="简单" value="2"></el-option>
+          <el-option label="普通" value="3"></el-option>
+          <el-option label="中等" value="4"></el-option>
+          <el-option label="困难" value="5"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="备注">
-        <el-input type="textarea" :rows="5" resize="none" v-model="dialogParams.row.description" />
+      <el-form-item label="解析" prop="analysis">
+        <el-input type="textarea" :rows="5" resize="none" v-model="dialogParams.row.analysis" />
       </el-form-item>
     </el-form>
 
-    <div class="dialog-footer">
+    <div style="display: flex; justify-content: end" class="dialog-footer">
       <el-button @click="dialogFormVisible = false">取消</el-button>
       <el-button type="primary" @click="submitHandler"> 确定 </el-button>
     </div>

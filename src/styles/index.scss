@@ -20,3 +20,12 @@ body {
 .el-breadcrumb {
   font-size: 16px;
 }
+.el-form-item--large {
+  --font-size: 16px;
+}
+.el-checkbox.el-checkbox--large .el-checkbox__label {
+  font-size: 16px;
+}
+.el-radio.el-radio--large .el-radio__label {
+  font-size: 16px;
+}
