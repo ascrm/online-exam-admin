@@ -2,7 +2,6 @@
 
 import { PORT1 } from '@/api/config/servicePort'
 import http from '@/api'
-import qs from 'qs'
 
 //分页查询试卷列表
 export const getExamPaperListApi = (params: { pageNum: number; pageSize: number }) =>

@@ -1,0 +1,22 @@
+/** @format */
+@import 'tailwindcss';
+@import '@/styles/reset';
+@import '@/styles/common';
+@import '@/assets/iconfont/iconfont';
+@import '@/assets/fonts/font';
+@import 'element-plus/dist/index.css';
+@import 'element-plus/theme-chalk/dark/css-vars.css';
+@import '@/styles/element-dark';
+@import '@/styles/element';
+:root {
+  --el-font-size-base: 16px;
+}
+body {
+  font-family: monospace;
+}
+.el-table--large .el-table__row {
+  font-size: 16px !important;
+}
+.el-breadcrumb {
+  font-size: 16px;
+}

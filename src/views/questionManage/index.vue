@@ -11,7 +11,7 @@
     >
       <!-- 表格 header 按钮 -->
       <template #tableHeader="scope">
-        <el-button type="primary" :icon="CirclePlus" @click="openDialog">新增管理员</el-button>
+        <el-button type="primary" :icon="CirclePlus" @click="openDialog('新增')">新增题目</el-button>
         <el-button
           type="danger"
           :icon="Delete"
@@ -19,18 +19,21 @@
           :disabled="!scope.isSelected"
           @click="batchDelete(scope.selectedListIds)"
         >
-          批量删除用户
+          批量删除试卷
         </el-button>
       </template>
 
       <!-- 表格操作 -->
       <template #operation="scope">
-        <el-button type="primary" link :icon="Refresh" @click="resetPass(scope.row)">重置密码</el-button>
+        <el-button type="primary" link :icon="View">查看详情</el-button>
+
+        <el-button type="primary" link :icon="EditPen" @click="openDialog('编辑', scope.row)">编辑</el-button>
+
         <el-button type="primary" link :icon="Delete" @click="deleteAccount(scope.row)">删除</el-button>
       </template>
     </ProTable>
-    <UserDialog ref="userDialogRef"></UserDialog>
-    <ImportExcel ref="dialogRef" />
+    <QuestionDialog ref="dialogRef"></QuestionDialog>
+    <ImportExcel />
   </div>
 </template>
 
@@ -41,17 +44,22 @@ import { useHandleData } from '@/hooks/useHandleData'
 import ProTable from '@/components/ProTable/index.vue'
 import ImportExcel from '@/components/ImportExcel/index.vue'
 import { ProTableInstance, ColumnProps } from '@/components/ProTable/interface'
-import { CirclePlus, Delete, Refresh } from '@element-plus/icons-vue'
-import { getUserListApi, deleteUserApi, resetUserPassWordApi, batchDelUserApi } from '@/api/modules/user'
-import UserDialog from './components/userDialog.vue'
+import { CirclePlus, Delete, EditPen, View } from '@element-plus/icons-vue'
+import {
+  addExamPaperApi,
+  batchDelExamPaperApi,
+  deleteExamPaperApi,
+  editExamPaperApi,
+  getExamPaperListApi,
+} from '@/api/modules/examPaper'
+import QuestionDialog from './components/questionDialog.vue'
+import { getQuestionListApi } from '@/api/modules/question'
 
 // ProTable 实例
 const proTable = ref<ProTableInstance>()
 
 // 如果表格需要初始化请求参数，直接定义传给 ProTable (之后每次请求都会自动带上该参数，此参数更改之后也会一直带上，改变此参数会自动刷新表格数据)
 const initParam = reactive({ type: 1 })
-
-// 或者直接去 hooks/useTable.ts 文件中把字段改为你后端对应的就行
 const dataCallback = (data: any) => {
   return {
     list: data.list,
@@ -65,52 +73,49 @@ const getTableList = (params: any) => {
   newParams.createTime && (newParams.startTime = newParams.createTime[0])
   newParams.createTime && (newParams.endTime = newParams.createTime[1])
   delete newParams.createTime
-  return getUserListApi({ pageNum: newParams.pageNum, pageSize: newParams.pageSize })
+  return getQuestionListApi({ pageNum: newParams.pageNum, pageSize: newParams.pageSize })
 }
 
 // 表格配置项
 const columns = reactive<ColumnProps<User.ResUserList>[]>([
   { type: 'selection', fixed: 'left', width: 70 },
+  { prop: 'questionTypeLabel', label: '题型', fixed: 'left', width: 120 },
+
   {
-    prop: 'username',
-    label: '用户账号',
+    prop: 'name',
+    label: '题目名称',
+    fixed: 'left',
     search: { el: 'input', tooltip: '我是搜索提示' },
   },
-  { prop: 'role', label: '角色' },
-  { prop: 'nickName', label: '昵称' },
-  {
-    prop: 'gender',
-    label: '性别',
-    search: { el: 'select', props: { filterable: true } },
-  },
-  { prop: 'email', label: '邮箱', width: 200 },
-  { prop: 'phone', label: '电话' },
+  { prop: 'description', label: '题干' },
+  { prop: 'difficultyLabel', label: '难度' },
+  { prop: 'createdBy', label: '作者' },
   { prop: 'createdAt', label: '创建时间', width: 240 },
-  { prop: 'operation', label: '操作', fixed: 'right', width: 220 },
+  { prop: 'operation', label: '操作', fixed: 'right', width: 290 },
 ])
 
-// 删除用户信息
+// 删除试卷信息
 const deleteAccount = async (params: User.ResUserList) => {
-  await useHandleData(deleteUserApi, { id: params.id }, `删除【${params.username}】用户`)
+  await useHandleData(deleteExamPaperApi, { id: params.id }, `删除【${params.username}】试卷`)
   proTable.value?.getTableList()
 }
 
-// 批量删除用户信息
+// 批量删除试卷信息
 const batchDelete = async (ids: string[]) => {
-  await useHandleData(batchDelUserApi, { idsStr: ids.join(',') }, '删除所选用户信息')
+  await useHandleData(batchDelExamPaperApi, { idsStr: ids.join() }, '删除所选试卷信息')
   proTable.value?.clearSelection()
   proTable.value?.getTableList()
 }
 
-// 重置用户密码
-const resetPass = async (params: User.ResUserList) => {
-  await useHandleData(resetUserPassWordApi, { id: params.id }, `重置【${params.username}】用户密码`)
-  proTable.value?.getTableList()
-}
-
-//新增管理员
-const userDialogRef = ref<InstanceType<typeof UserDialog> | null>(null)
-const openDialog = () => {
-  userDialogRef.value?.acceptParams({ getTableList: proTable.value?.getTableList })
+//新增-编辑试卷
+const dialogRef = ref<InstanceType<typeof QuestionDialog> | null>(null)
+const openDialog = (title: string, row: any = {}) => {
+  const params = {
+    title,
+    row: { ...row },
+    api: title === '新增' ? addExamPaperApi : editExamPaperApi,
+    getTableList: proTable.value?.getTableList,
+  }
+  dialogRef.value?.acceptParams(params)
 }
 </script>

@@ -86,8 +86,8 @@ const columns = reactive<ColumnProps<User.ResUserList>[]>([
   { prop: 'passingScore', label: '及格分数' },
   { prop: 'isPublishedLabel', label: '是否发布' },
   { prop: 'description', label: '备注' },
-  { prop: 'createdAt', label: '创建时间', width: 200 },
-  { prop: 'updatedAt', label: '修改时间', width: 200 },
+  { prop: 'createdAt', label: '创建时间', width: 240 },
+  { prop: 'updatedAt', label: '修改时间', width: 240 },
   { prop: 'operation', label: '操作', fixed: 'right', width: 200 },
 ])
 

@@ -16,7 +16,7 @@
       }
     },
     {
-      "path": "/examPaperManage/index",
+      "path": "/examPaperManage",
       "name": "examPaperManage",
       "component": "/examPaperManage/index",
       "meta": {
@@ -30,7 +30,21 @@
       }
     },
     {
-      "path": "/userManage/index",
+      "path": "/questionManage",
+      "name": "questionManage",
+      "component": "/questionManage/index",
+      "meta": {
+        "icon": "Menu",
+        "title": "题库管理",
+        "isLink": "",
+        "isHide": false,
+        "isFull": false,
+        "isAffix": true,
+        "isKeepAlive": true
+      }
+    },
+    {
+      "path": "/userManage",
       "name": "userManage",
       "component": "/userManage/index",
       "meta": {
