@@ -2,7 +2,19 @@
 
 <script setup lang="ts">
 import { ElMessage, FormInstance } from 'element-plus'
-import { reactive, ref } from 'vue'
+import { PropType, reactive, ref } from 'vue'
+
+const props = defineProps({
+  dialogParams: {
+    required: true,
+    type: Object as PropType<{
+      title: string
+      row: any
+      api?: (params: any) => Promise<any>
+      getTableList: () => void
+    }>,
+  },
+})
 
 const rules = reactive({
   name: [{ required: true, message: '请输入题目名称' }],
@@ -16,28 +28,6 @@ const rules = reactive({
   difficulty: [{ required: true, message: '请选择题目难度' }],
 })
 
-interface dialogProps {
-  title: string
-  row: any
-  api?: (params: any) => Promise<any>
-  getTableList: () => void
-}
-
-const dialogFormVisible = ref(false)
-const dialogParams = ref<dialogProps>({
-  title: '',
-  row: {},
-  getTableList: () => {},
-})
-
-//打开对话框
-const acceptParams = (params: any) => {
-  dialogFormVisible.value = true
-  dialogParams.value = params
-}
-
-const checkList = ref([])
-
 //提交数据
 const ruleFormRef = ref<FormInstance>()
 
@@ -45,26 +35,31 @@ const submitHandler = async () => {
   ruleFormRef.value!.validate(async valid => {
     if (!valid) return
     try {
-      if (dialogParams.value.row.createdAt != null)
-        dialogParams.value.row.createdAt = dialogParams.value.row.createdAt.split(' ').join('T')
+      if (props.dialogParams.row.createdAt != null)
+        props.dialogParams.row.createdAt = props.dialogParams.row.createdAt.split(' ').join('T')
 
-      if (dialogParams.value.row.updatedAt != null)
-        dialogParams.value.row.updatedAt = dialogParams.value.row.updatedAt.split(' ').join('T')
+      if (props.dialogParams.row.updatedAt != null)
+        props.dialogParams.row.updatedAt = props.dialogParams.row.updatedAt.split(' ').join('T')
 
-      console.log(dialogParams.value.row.isPublished)
-      await dialogParams.value.api!(dialogParams.value.row)
-      ElMessage.success({ message: `${dialogParams.value.title}用户成功！` })
-      dialogParams.value.getTableList!()
-      dialogFormVisible.value = false
+      if (props.dialogParams.row.questionType == null) props.dialogParams.row.questionType = 2
+
+      console.log(props.dialogParams.row.isPublished)
+      await props.dialogParams.api!(props.dialogParams.row)
+      ElMessage.success({ message: `${props.dialogParams.title}用户成功！` })
+      props.dialogParams.getTableList!()
     } catch (error) {
       console.log(error)
     }
   })
 }
 
-defineExpose({
-  acceptParams,
-})
+//退出对话框
+const emit = defineEmits<{
+  (e: 'exit'): void
+}>()
+const exitDialog = () => {
+  emit('exit')
+}
 </script>
 
 <template>
@@ -89,7 +84,7 @@ defineExpose({
         <el-input v-model="dialogParams.row.optionD" autocomplete="off" />
       </el-form-item>
       <el-form-item label="正确答案" prop="answer">
-        <el-checkbox-group v-model="checkList">
+        <el-checkbox-group v-model="dialogParams.row.answer">
           <el-checkbox label="选项A" value="A" />
           <el-checkbox label="选项B" value="B" />
           <el-checkbox label="选项C" value="C" />

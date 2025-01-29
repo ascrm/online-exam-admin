@@ -19,7 +19,7 @@
           :disabled="!scope.isSelected"
           @click="batchDelete(scope.selectedListIds)"
         >
-          批量删除试卷
+          批量删除题目
         </el-button>
       </template>
 
@@ -45,15 +45,9 @@ import ProTable from '@/components/ProTable/index.vue'
 import ImportExcel from '@/components/ImportExcel/index.vue'
 import { ProTableInstance, ColumnProps } from '@/components/ProTable/interface'
 import { CirclePlus, Delete, EditPen, View } from '@element-plus/icons-vue'
-import {
-  addExamPaperApi,
-  batchDelExamPaperApi,
-  deleteExamPaperApi,
-  editExamPaperApi,
-  getExamPaperListApi,
-} from '@/api/modules/examPaper'
+import { batchDelExamPaperApi, editExamPaperApi } from '@/api/modules/examPaper'
 import QuestionDialog from './components/questionDialog.vue'
-import { getQuestionListApi } from '@/api/modules/question'
+import { addQuestionApi, deleteQuestionApi, getQuestionListApi } from '@/api/modules/question'
 
 // ProTable 实例
 const proTable = ref<ProTableInstance>()
@@ -94,26 +88,26 @@ const columns = reactive<ColumnProps<User.ResUserList>[]>([
   { prop: 'operation', label: '操作', fixed: 'right', width: 290 },
 ])
 
-// 删除试卷信息
-const deleteAccount = async (params: User.ResUserList) => {
-  await useHandleData(deleteExamPaperApi, { id: params.id }, `删除【${params.username}】试卷`)
+// 删除题目信息
+const deleteAccount = async (params: any) => {
+  await useHandleData(deleteQuestionApi, { id: params.id }, `删除【${params.name}】题目`)
   proTable.value?.getTableList()
 }
 
-// 批量删除试卷信息
+// 批量删除题目信息
 const batchDelete = async (ids: string[]) => {
-  await useHandleData(batchDelExamPaperApi, { idsStr: ids.join() }, '删除所选试卷信息')
+  await useHandleData(batchDelExamPaperApi, { idsStr: ids.join() }, '删除所选题目信息')
   proTable.value?.clearSelection()
   proTable.value?.getTableList()
 }
 
-//新增-编辑试卷
+//新增-编辑题目
 const dialogRef = ref<InstanceType<typeof QuestionDialog> | null>(null)
 const openDialog = (title: string, row: any = {}) => {
   const params = {
     title,
     row: { ...row },
-    api: title === '新增' ? addExamPaperApi : editExamPaperApi,
+    api: title === '新增' ? addQuestionApi : editExamPaperApi,
     getTableList: proTable.value?.getTableList,
   }
   dialogRef.value?.acceptParams(params)
