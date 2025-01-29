@@ -93,6 +93,7 @@ defineExpose({
           <el-radio label="选项A" value="A"></el-radio>
           <el-radio label="选项B" value="B"></el-radio>
           <el-radio label="选项C" value="C"></el-radio>
+          <el-radio label="选项D" value="D"></el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="题目分数" prop="score">
