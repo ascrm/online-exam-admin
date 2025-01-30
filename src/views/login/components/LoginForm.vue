@@ -77,8 +77,11 @@ const login = (formEl: FormInstance | undefined) => {
     loading.value = true
     try {
       // 1.执行登录接口
-      const { data } = await loginApi({ ...loginForm, password: md5(loginForm.password) })
-      userStore.setToken(data)
+      const { data } = await loginApi({
+        ...loginForm,
+        password: md5(loginForm.password),
+      })
+      userStore.setToken(data.token)
 
       // 2.添加动态路由
       await initDynamicRouter()
@@ -95,10 +98,11 @@ const login = (formEl: FormInstance | undefined) => {
       //   type: "success",
       //   duration: 3000
       // });
+      const welcomeStr = getTimePeriod()
       ElNotification({
-        title: 'React 付费版本 🔥🔥🔥',
+        title: '欢迎使用online-exam 😄😄😄',
         dangerouslyUseHTMLString: true,
-        message: "预览地址：<a href='https://pro.spicyboy.cn'>https://pro.spicyboy.cn</a>",
+        message: welcomeStr + ',' + data.user,
         type: 'success',
         duration: 8000,
       })
@@ -106,6 +110,22 @@ const login = (formEl: FormInstance | undefined) => {
       loading.value = false
     }
   })
+}
+
+//获取当前时间节点
+function getTimePeriod() {
+  const now = new Date()
+  const hour = now.getHours()
+
+  if (hour >= 5 && hour < 11) {
+    return '上午好'
+  } else if (hour >= 11 && hour < 13) {
+    return '中午好'
+  } else if (hour >= 13 && hour < 18) {
+    return '下午好'
+  } else {
+    return '晚上好' // 包含 18:00-23:59 和 0:00-4:59
+  }
 }
 
 // resetForm
