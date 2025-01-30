@@ -44,6 +44,20 @@
       }
     },
     {
+      "path": "/importQuestion",
+      "name": "importQuestion",
+      "component": "/importQuestion/index",
+      "meta": {
+        "icon": "Menu",
+        "title": "导入试题",
+        "isLink": "",
+        "isHide": false,
+        "isFull": false,
+        "isAffix": true,
+        "isKeepAlive": true
+      }
+    },
+    {
       "path": "/userManage",
       "name": "userManage",
       "component": "/userManage/index",

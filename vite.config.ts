@@ -8,6 +8,7 @@ import { createVitePlugins } from './build/plugins'
 import pkg from './package.json'
 import dayjs from 'dayjs'
 
+
 const { dependencies, devDependencies, name, version } = pkg
 const __APP_INFO__ = {
   pkg: { dependencies, devDependencies, name, version },
@@ -47,7 +48,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       // Load proxy configuration from .env.development
       proxy: createProxy(viteEnv.VITE_PROXY),
     },
-    plugins: [createVitePlugins(viteEnv)],
+    plugins: createVitePlugins(viteEnv),
     esbuild: {
       pure: viteEnv.VITE_DROP_CONSOLE ? ['console.log', 'debugger'] : [],
     },

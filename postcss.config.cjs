@@ -1,5 +1,8 @@
+/** @format */
+
 module.exports = {
   plugins: {
-    autoprefixer: {}
-  }
-};
+    autoprefixer: {},
+    tailwindcss: {},
+  },
+}
