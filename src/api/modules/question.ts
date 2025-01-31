@@ -20,3 +20,12 @@ export const batchDelQuestionApi = (params: any) => http.delete(PORT1 + `/questi
 
 //根据id获取题目详细信息
 export const getQuestionViewerByIdApi = (params: any) => http.get(PORT1 + `/question`, params)
+
+//根据条件查询题目列表
+export const getQuestionsByConditionApi = (params: any) => http.post(PORT1 + `/questions/condition`, params)
+
+//导入题目
+export const importQuestionApi = (params: any) => http.post(PORT1 + `/exam/question`, params)
+
+//根据试卷id和题目类别查询当前试卷下的所有题目（包括相信信息）
+export const getQuestionsByExamPaperIdAndQuestionTypeApi = (params: any) => http.get(PORT1 + `/exam/question`, params)

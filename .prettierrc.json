@@ -9,5 +9,6 @@
   "insertPragma": true,
   "bracketSpacing": true,
   "trailingComma": "all",
-  "jsxBracketSameLine": false
+  "jsxBracketSameLine": false,
+  "htmlWhitespaceSensitivity": "ignore"
 }

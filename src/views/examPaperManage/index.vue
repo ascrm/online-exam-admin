@@ -25,8 +25,9 @@
 
       <!-- 表格操作 -->
       <template #operation="scope">
-        <el-button type="primary" link :icon="EditPen" @click="openDialog('编辑', scope.row)">编辑</el-button>
+        <el-button type="primary" link :icon="Plus" @click="routerPushHandler(scope.row)">导入试题</el-button>
 
+        <el-button type="primary" link :icon="EditPen" @click="openDialog('编辑', scope.row)">编辑</el-button>
         <el-button type="primary" link :icon="Delete" @click="deleteAccount(scope.row)">删除</el-button>
       </template>
     </ProTable>
@@ -42,7 +43,7 @@ import { useHandleData } from '@/hooks/useHandleData'
 import ProTable from '@/components/ProTable/index.vue'
 import ImportExcel from '@/components/ImportExcel/index.vue'
 import { ProTableInstance, ColumnProps } from '@/components/ProTable/interface'
-import { CirclePlus, Delete, EditPen } from '@element-plus/icons-vue'
+import { CirclePlus, Delete, EditPen, Plus } from '@element-plus/icons-vue'
 import {
   addExamPaperApi,
   batchDelExamPaperApi,
@@ -51,6 +52,14 @@ import {
   getExamPaperListApi,
 } from '@/api/modules/examPaper'
 import ExamPaperDialog from './components/examPaperDialog.vue'
+import router from '@/routers'
+import { stringify } from 'qs'
+
+//路由跳转方法
+const routerPushHandler = (params: any) => {
+  localStorage.setItem('examPaper', JSON.stringify(params))
+  router.push(`/importQuestion/`)
+}
 
 // ProTable 实例
 const proTable = ref<ProTableInstance>()
@@ -88,7 +97,7 @@ const columns = reactive<ColumnProps<User.ResUserList>[]>([
   { prop: 'description', label: '备注' },
   { prop: 'createdAt', label: '创建时间', width: 240 },
   { prop: 'updatedAt', label: '修改时间', width: 240 },
-  { prop: 'operation', label: '操作', fixed: 'right', width: 200 },
+  { prop: 'operation', label: '操作', fixed: 'right', width: 260 },
 ])
 
 // 删除试卷信息
