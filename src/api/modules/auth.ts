@@ -26,14 +26,13 @@ export const getAuthMenuListApi = () => {
 }
 
 // 获取按钮权限
-export const getAuthButtonListApi = () => {
-  // return http.get<Login.ResAuthButtons>(PORT1 + `/auth/buttons`, {}, { loading: false })
-  return authButtonList
-}
+export const getAuthButtonListApi = () => authButtonList
 
 // 用户退出登录
-export const logoutApi = () => {
-  return http.post(PORT1 + `/logout`)
-}
+export const logoutApi = () => http.post(PORT1 + `/logout`)
+
+//获取验证码
+export const getConfirmCodeApi = (params: any) => http.get(PORT1 + `/code`, params)
 
 //修改密码
+export const updatePasswordApi = (params: any) => http.put(PORT1 + `/password`, params)
