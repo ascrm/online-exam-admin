@@ -11,6 +11,7 @@ import {
   getQuestionViewerByIdApi,
   importQuestionApi,
 } from '@/api/modules/question'
+import { ElMessage } from 'element-plus'
 
 interface QuestionProp {
   id: number
@@ -35,10 +36,13 @@ interface ExamPaperProp {
   name: string
 }
 
+const activeIndex = ref(4)
+const activeQuestionType = ref(1)
 const examPaper = ref<Partial<ExamPaperProp>>({})
 onMounted(() => {
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
   getQuestionList()
+  getQuestionsByExamPaperIdAndQuestionType()
 })
 
 //条件查询请求参数
@@ -64,18 +68,32 @@ const getQuestionViewerById = async (params: number) => {
 
 //导入题目
 const importQuestion = async (params: QuestionProp) => {
-  await importQuestionApi({ examPaperId: examPaper.value.id, id: params.id })
-  getQuestionsByExamPaperIdAndQuestionType(params.questionType)
+  const resp = await importQuestionApi({ examPaperId: examPaper.value.id, id: params.id })
+  if (resp.code == '0') ElMessage.error(resp.msg)
+
+  getQuestionsByExamPaperIdAndQuestionType()
 }
 
 //根据试卷id和题目类别查询当前试卷下的所有题目（包括相信信息）
 const questionViewerList = ref<QuestionProp[]>([])
-const getQuestionsByExamPaperIdAndQuestionType = async (questionType: number) => {
+const getQuestionsByExamPaperIdAndQuestionType = async () => {
   const { data } = await getQuestionsByExamPaperIdAndQuestionTypeApi({
     examPaperId: examPaper.value.id,
-    questionType,
+    questionType: activeQuestionType.value,
   })
   questionViewerList.value = data as unknown as any
+}
+
+//切换题目类别
+const changeQuestionType = (questionType: number) => {
+  activeQuestionType.value = questionType
+  getQuestionsByExamPaperIdAndQuestionType()
+}
+
+//切换activeIndex
+const viewQuestionInfo = (id: number, index: number) => {
+  activeIndex.value = index
+  getQuestionViewerById(id)
 }
 
 //重置表单
@@ -86,11 +104,6 @@ const resetHandler = () => {
     difficulty: undefined,
   }
 }
-
-const activeIndex = ref(4)
-const right = ref(1)
-const error = ref(2)
-const finished = ref(3)
 </script>
 
 <template>
@@ -102,26 +115,35 @@ const finished = ref(3)
         <div>总分：100</div>
       </div>
 
-      <div class="mt-[30px] px-[10px] [&_.el-icon]:mr-[5px]">
-        <div class="flex justify-between py-[3px] text-[1.5em]">
+      <div class="mt-[30px] px-[5px] [&_.el-icon]:mr-[5px]">
+        <div class="flex justify-between px-[5px] py-[3px] text-[1.5em]">
           <div>题目总览</div>
           <div>题数</div>
         </div>
-        <QuestionTypeItem>
+        <QuestionTypeItem
+          :class="activeQuestionType === 1 && 'bg-gray-100 text-blue-500'"
+          @click="changeQuestionType(1)"
+        >
           <template #left>
             <el-icon><Eleme /></el-icon>
             单选题
           </template>
           <template #right>20</template>
         </QuestionTypeItem>
-        <QuestionTypeItem>
+        <QuestionTypeItem
+          :class="activeQuestionType === 2 && 'bg-gray-100 text-blue-500'"
+          @click="changeQuestionType(2)"
+        >
           <template #left>
             <el-icon><ElementPlus /></el-icon>
             多选题
           </template>
           <template #right>20</template>
         </QuestionTypeItem>
-        <QuestionTypeItem>
+        <QuestionTypeItem
+          :class="activeQuestionType === 3 && 'bg-gray-100 text-blue-500'"
+          @click="changeQuestionType(3)"
+        >
           <template #left>
             <el-icon><Finished /></el-icon>
             判断题
@@ -139,38 +161,18 @@ const finished = ref(3)
           "
           v-for="(item, index) in questionViewerList"
           :key="index"
+          @click="viewQuestionInfo(item.id, index + 1)"
         >
-          <div :class="(index + 1 === right || index + 1 === error || index + 1 === finished) && 'hidden'">
+          <div>
             {{ index + 1 }}
           </div>
-          <div
-            :class="
-              cn(
-                'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-green-300',
-                index + 1 === right && 'flex',
-              )
-            "
-          >
+          <div :class="'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-green-300'">
             <el-icon class="text-green-600"><Select /></el-icon>
           </div>
-          <div
-            :class="
-              cn(
-                'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-red-300',
-                index + 1 === error && 'flex',
-              )
-            "
-          >
+          <div :class="'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-red-300'">
             <el-icon class="text-red-600"><CloseBold /></el-icon>
           </div>
-          <div
-            :class="
-              cn(
-                'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-blue-300',
-                index + 1 === finished && 'flex',
-              )
-            "
-          >
+          <div :class="'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-blue-300'">
             <el-icon class="text-blue-600"><SemiSelect /></el-icon>
           </div>
         </div>

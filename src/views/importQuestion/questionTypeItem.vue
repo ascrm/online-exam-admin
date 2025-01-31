@@ -1,7 +1,7 @@
 <!-- @format -->
 
 <template>
-  <div class="flex items-center justify-between py-[3px]">
+  <div class="flex cursor-pointer items-center justify-between rounded-md px-[5px] py-[3px]">
     <div class="flex items-center text-[1.5em]">
       <slot name="left"></slot>
     </div>
