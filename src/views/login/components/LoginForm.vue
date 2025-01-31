@@ -82,7 +82,7 @@ const login = (formEl: FormInstance | undefined) => {
         password: md5(loginForm.password),
       })
       userStore.setToken(data.token)
-      userStore.setUserInfo({ name: data.user })
+      userStore.setUserInfo(data.userInfo)
 
       // 2.添加动态路由
       await initDynamicRouter()
@@ -103,7 +103,7 @@ const login = (formEl: FormInstance | undefined) => {
       ElNotification({
         title: '欢迎使用online-exam 😄😄😄',
         dangerouslyUseHTMLString: true,
-        message: welcomeStr + ',' + data.user,
+        message: welcomeStr + ',' + data.userInfo.nickName,
         type: 'success',
         duration: 8000,
       })
