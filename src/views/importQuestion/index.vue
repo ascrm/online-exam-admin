@@ -90,8 +90,14 @@ const changeQuestionType = (questionType: number) => {
   getQuestionsByExamPaperIdAndQuestionType()
 }
 
+//查看题目详情
+const viewQuestionInfo = (id: number) => {
+  activeIndex.value = 0
+  getQuestionViewerById(id)
+}
+
 //切换activeIndex
-const viewQuestionInfo = (id: number, index: number) => {
+const changeActiveIndex = (id: number, index: number) => {
   activeIndex.value = index
   getQuestionViewerById(id)
 }
@@ -161,7 +167,7 @@ const resetHandler = () => {
           "
           v-for="(item, index) in questionViewerList"
           :key="index"
-          @click="viewQuestionInfo(item.id, index + 1)"
+          @click="changeActiveIndex(item.id, index + 1)"
         >
           <div>
             {{ index + 1 }}
@@ -213,7 +219,7 @@ const resetHandler = () => {
         <el-table-column prop="difficultyLabel" label="难度" width="90" />
         <el-table-column fixed="right" width="120px" label="查看/添加">
           <template #default="scope">
-            <el-button type="primary" :icon="View" circle @click="getQuestionViewerById(scope.row.id)"></el-button>
+            <el-button type="primary" :icon="View" circle @click="viewQuestionInfo(scope.row.id)"></el-button>
             <el-button type="success" :icon="DocumentAdd" circle @click="importQuestion(scope.row)" />
           </template>
         </el-table-column>
