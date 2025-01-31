@@ -11,7 +11,6 @@ import {
   getQuestionViewerByIdApi,
   importQuestionApi,
 } from '@/api/modules/question'
-import { ElMessage } from 'element-plus'
 
 interface QuestionProp {
   id: number
@@ -69,8 +68,6 @@ const getQuestionViewerById = async (params: number) => {
 //导入题目
 const importQuestion = async (params: QuestionProp) => {
   const resp = await importQuestionApi({ examPaperId: examPaper.value.id, id: params.id })
-  if (resp.code == '0') ElMessage.error(resp.msg)
-
   getQuestionsByExamPaperIdAndQuestionType()
 }
 

@@ -28,7 +28,7 @@
     </el-form-item>
   </el-form>
   <div class="login-btn">
-    <el-button :icon="CircleClose" round size="large" @click="resetForm(loginFormRef)"> 重置 </el-button>
+    <el-button :icon="CircleClose" round size="large" @click="resetForm(loginFormRef)">重置</el-button>
     <el-button :icon="UserFilled" round size="large" type="primary" :loading="loading" @click="login(loginFormRef)">
       登录
     </el-button>
@@ -82,6 +82,7 @@ const login = (formEl: FormInstance | undefined) => {
         password: md5(loginForm.password),
       })
       userStore.setToken(data.token)
+      userStore.setUserInfo({ name: data.user })
 
       // 2.添加动态路由
       await initDynamicRouter()
