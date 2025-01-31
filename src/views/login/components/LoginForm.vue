@@ -42,7 +42,7 @@ import { HOME_URL } from '@/config'
 // import { getTimeState } from "@/utils";
 import { Login } from '@/api/interface'
 import { ElNotification } from 'element-plus'
-import { loginApi } from '@/api/modules/login'
+import { loginApi } from '@/api/modules/auth'
 import { useUserStore } from '@/stores/modules/user'
 import { useTabsStore } from '@/stores/modules/tabs'
 import { useKeepAliveStore } from '@/stores/modules/keepAlive'
