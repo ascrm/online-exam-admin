@@ -37,6 +37,7 @@ export namespace Login {
   export interface ReqLoginForm {
     username: string
     password: string
+    confirmPassword: ''
   }
 }
 
@@ -55,7 +56,7 @@ export namespace User {
     id: string
     username: string
     password: string
-    role: number
+    role: string
     nickName: string
     gender: number
     avatar: string

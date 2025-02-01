@@ -1,3 +1,5 @@
+<!-- @format -->
+
 <template>
   <div class="login-container flx-center">
     <div class="login-box">
@@ -8,7 +10,7 @@
       <div class="login-form">
         <div class="login-logo">
           <img class="login-icon" src="@/assets/images/logo.svg" alt="" />
-          <h2 class="logo-text">Geeker-Admin</h2>
+          <h2 class="logo-text">Online-Exam</h2>
         </div>
         <LoginForm />
       </div>
@@ -17,10 +19,10 @@
 </template>
 
 <script setup lang="ts" name="login">
-import LoginForm from "./components/LoginForm.vue";
-import SwitchDark from "@/components/SwitchDark/index.vue";
+import LoginForm from './components/LoginForm.vue'
+import SwitchDark from '@/components/SwitchDark/index.vue'
 </script>
 
 <style scoped lang="scss">
-@import "./index";
+@import './index';
 </style>

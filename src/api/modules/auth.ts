@@ -18,7 +18,7 @@ export const loginApi = (params: Login.ReqLoginForm) =>
 // 获取菜单列表
 export const getAuthMenuListApi = () => {
   const userStore = useUserStore()
-  if (userStore.userInfo.role === 1) {
+  if (userStore.userInfo.role == '管理员' || userStore.userInfo.role == '1') {
     return adminMenuList
   }
 
