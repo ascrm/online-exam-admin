@@ -15,6 +15,9 @@ import { useUserStore } from '@/stores/modules/user'
 export const loginApi = (params: Login.ReqLoginForm) =>
   http.post<{ token: string; userInfo: User.ResUserList }>(PORT1 + `/login`, params, { loading: false })
 
+//用户注册
+export const registerApi = (params: any) => http.post(PORT1 + '/register', params)
+
 // 获取菜单列表
 export const getAuthMenuListApi = () => {
   const userStore = useUserStore()

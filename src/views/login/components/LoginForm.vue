@@ -3,7 +3,7 @@
 <template>
   <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" size="large">
     <el-form-item prop="username">
-      <el-input v-model="loginForm.username" placeholder="用户名：admin / user">
+      <el-input v-model="loginForm.username" placeholder="请输入账号">
         <template #prefix>
           <el-icon class="el-input__icon">
             <user />
@@ -15,7 +15,7 @@
       <el-input
         v-model="loginForm.password"
         type="password"
-        placeholder="密码：123456"
+        placeholder="请输入密码"
         show-password
         autocomplete="new-password"
       >
@@ -27,10 +27,36 @@
       </el-input>
     </el-form-item>
   </el-form>
-  <div class="login-btn">
-    <el-button :icon="CircleClose" round size="large" @click="resetForm(loginFormRef)">重置</el-button>
-    <el-button :icon="UserFilled" round size="large" type="primary" :loading="loading" @click="login(loginFormRef)">
+
+  <div class="flex justify-end pb-[10px] text-[1.2em] text-gray-500">
+    <div class="cursor-pointer hover:text-blue-400" v-if="!isRegister" @click="changeForm">还没有账号?点击注册</div>
+    <div class="cursor-pointer hover:text-blue-400" v-else @click="changeForm">已有账号?点击登录</div>
+  </div>
+
+  <div>
+    <el-button
+      v-if="!isRegister"
+      class="w-[100%]"
+      :icon="UserFilled"
+      round
+      size="large"
+      type="primary"
+      :loading="loading"
+      @click="login(loginFormRef)"
+    >
       登录
+    </el-button>
+    <el-button
+      v-else
+      class="w-[100%]"
+      :icon="UserFilled"
+      round
+      size="large"
+      type="primary"
+      :loading="loading"
+      @click="register(registerFormRef)"
+    >
+      注册
     </el-button>
   </div>
 </template>
@@ -39,17 +65,19 @@
 import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { HOME_URL } from '@/config'
-// import { getTimeState } from "@/utils";
+import { getTimeState } from '@/utils'
 import { Login } from '@/api/interface'
-import { ElNotification } from 'element-plus'
-import { loginApi } from '@/api/modules/auth'
+import { ElMessage, ElNotification } from 'element-plus'
+import { loginApi, registerApi } from '@/api/modules/auth'
 import { useUserStore } from '@/stores/modules/user'
 import { useTabsStore } from '@/stores/modules/tabs'
 import { useKeepAliveStore } from '@/stores/modules/keepAlive'
 import { initDynamicRouter } from '@/routers/modules/dynamicRouter'
-import { CircleClose, UserFilled } from '@element-plus/icons-vue'
+import { UserFilled } from '@element-plus/icons-vue'
 import type { ElForm } from 'element-plus'
 import md5 from 'md5'
+
+const isRegister = ref(false)
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -58,15 +86,18 @@ const keepAliveStore = useKeepAliveStore()
 
 type FormInstance = InstanceType<typeof ElForm>
 const loginFormRef = ref<FormInstance>()
+const registerFormRef = ref<FormInstance>()
 const loginRules = reactive({
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  confirmPassword: [{ required: true, message: '请确认密码', trigger: 'blur' }],
 })
 
 const loading = ref(false)
 const loginForm = reactive<Login.ReqLoginForm>({
   username: '',
   password: '',
+  confirmPassword: '',
 })
 
 // login
@@ -93,13 +124,7 @@ const login = (formEl: FormInstance | undefined) => {
 
       // 4.跳转到首页
       router.push(HOME_URL)
-      // ElNotification({
-      //   title: getTimeState(),
-      //   message: "欢迎登录 Geeker-Admin",
-      //   type: "success",
-      //   duration: 3000
-      // });
-      const welcomeStr = getTimePeriod()
+      const welcomeStr = getTimeState()
       ElNotification({
         title: '欢迎使用online-exam 😄😄😄',
         dangerouslyUseHTMLString: true,
@@ -113,26 +138,29 @@ const login = (formEl: FormInstance | undefined) => {
   })
 }
 
-//获取当前时间节点
-function getTimePeriod() {
-  const now = new Date()
-  const hour = now.getHours()
-
-  if (hour >= 5 && hour < 11) {
-    return '上午好'
-  } else if (hour >= 11 && hour < 13) {
-    return '中午好'
-  } else if (hour >= 13 && hour < 18) {
-    return '下午好'
-  } else {
-    return '晚上好' // 包含 18:00-23:59 和 0:00-4:59
-  }
+//register
+const register = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  formEl.validate(async valid => {
+    if (!valid) return
+    loading.value = true
+    try {
+      const { msg } = await registerApi({
+        ...loginForm,
+        password: md5(loginForm.password),
+      })
+      ElMessage.success(msg)
+    } finally {
+      loading.value = false
+    }
+  })
 }
 
-// resetForm
-const resetForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return
-  formEl.resetFields()
+const changeForm = () => {
+  loginForm.username = ''
+  loginForm.password = ''
+  loginForm.confirmPassword = ''
+  isRegister.value = !isRegister.value
 }
 
 onMounted(() => {
