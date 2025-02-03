@@ -3,7 +3,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { Finished } from '@element-plus/icons-vue'
-import { getQuestionsByExamPaperIdAndQuestionTypeApi, getQuestionViewerByIdApi } from '@/api/modules/question'
 import examOptionItem from './components/examOptionItem.vue'
 
 interface QuestionProp {
@@ -34,23 +33,10 @@ interface ExamPaperProp {
   updatedAt: string
 }
 
-const activeIndex = ref(1)
-const activeQuestionType = ref(1)
 const examPaper = ref<Partial<ExamPaperProp>>({})
 onMounted(async () => {
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
-  await getQuestionsByExamPaperIdAndQuestionType()
 })
-
-//根据试卷id和题目类别查询当前试卷下的所有题目（包括相信信息）
-const questionViewerList = ref<QuestionProp[]>([])
-const getQuestionsByExamPaperIdAndQuestionType = async () => {
-  const { data } = await getQuestionsByExamPaperIdAndQuestionTypeApi({
-    examPaperId: examPaper.value.id,
-    questionType: activeQuestionType.value,
-  })
-  questionViewerList.value = data as unknown as any
-}
 
 //切换activeItem
 const activeItemId = ref(0)
@@ -61,6 +47,7 @@ const changeActiveItem = (data: any, id: any) => {
 }
 
 const historyExamQuestion = ref({
+  questionId: '',
   answer: '',
 })
 </script>
@@ -86,6 +73,7 @@ const historyExamQuestion = ref({
             <div>题目总览</div>
             <div>题数</div>
           </div>
+
           <examOptionItem @change-active-item="changeActiveItem" :active-item-id="activeItemId" :question-type="1">
             <template #left>
               <el-icon><Eleme /></el-icon>

@@ -33,7 +33,6 @@ const getQuestionList = async () => {
 }
 
 const emit = defineEmits(['changeActiveItem'])
-
 //切换题目
 const changeActiveIndex = async id => {
   const { data } = await getQuestionViewerByIdApi({ id })
