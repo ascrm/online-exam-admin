@@ -44,9 +44,7 @@ onMounted(async () => {
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
   await getQuestionList()
   await getQuestionsByExamPaperIdAndQuestionType()
-  await totalHandler(1)
-  await totalHandler(2)
-  await totalHandler(3)
+  await totalHandler()
 })
 
 //条件查询请求参数
@@ -131,16 +129,19 @@ const multipleCount = ref(0)
 const judgeCount = ref(0)
 const totalCount = ref(0)
 const totalScores = ref(0)
-const totalHandler = async (questionType: number) => {
-  const { data } = await getQuestionsByExamPaperIdAndQuestionTypeApi({
-    examPaperId: examPaper.value.id,
-    questionType,
-  })
-  if (questionType === 1) singleCount.value = data.length
-  if (questionType === 2) multipleCount.value = data.length
-  if (questionType === 3) judgeCount.value = data.length
-  totalCount.value += data.length
-  totalScores.value += data.reduce((acc, cur) => acc + cur.score, 0)
+const totalHandler = async () => {
+  for (let i = 1; i <= 3; i++) {
+    const { data } = await getQuestionsByExamPaperIdAndQuestionTypeApi({
+      examPaperId: examPaper.value.id,
+      questionType: i,
+    })
+    if (data === undefined || data.length === 0) return
+    if (i == 1) singleCount.value = data.length
+    if (i == 2) multipleCount.value = data.length
+    if (i == 3) judgeCount.value = data.length
+    totalCount.value += data.length
+    totalScores.value += data.reduce((acc, cur) => acc + cur.score, 0)
+  }
 }
 
 //题目数量和分数变化

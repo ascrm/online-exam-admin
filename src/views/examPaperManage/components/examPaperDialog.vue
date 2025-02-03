@@ -59,8 +59,8 @@ defineExpose({
 
 <template>
   <div>
-    <el-dialog v-model="dialogFormVisible" :title="`${dialogParams.title}试卷`" width="600">
-      <el-form ref="ruleFormRef" :rules="rules" label-width="100px" label-suffix=" :" :model="dialogParams.row">
+    <el-dialog v-model="dialogFormVisible" :title="`${dialogParams.title}试卷`" width="650">
+      <el-form ref="ruleFormRef" :rules="rules" label-width="120px" label-suffix=" :" :model="dialogParams.row">
         <el-form-item label="试卷名称" prop="name">
           <el-input v-model="dialogParams.row.name" autocomplete="off" />
         </el-form-item>
@@ -80,7 +80,7 @@ defineExpose({
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogFormVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitHandler"> 确定 </el-button>
+          <el-button type="primary" @click="submitHandler">确定</el-button>
         </div>
       </template>
     </el-dialog>
