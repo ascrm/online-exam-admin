@@ -6,6 +6,7 @@ import QuestionTypeItem from './questionTypeItem.vue'
 import { cn } from '@/utils/cn'
 import { Finished, Select, DocumentAdd, View } from '@element-plus/icons-vue'
 import {
+  delQuestionsByExamPaperIdAndQuestionIdApi,
   getQuestionsByConditionApi,
   getQuestionsByExamPaperIdAndQuestionTypeApi,
   getQuestionViewerByIdApi,
@@ -35,7 +36,7 @@ interface ExamPaperProp {
   name: string
 }
 
-const activeIndex = ref(4)
+const activeIndex = ref(1)
 const activeQuestionType = ref(1)
 const examPaper = ref<Partial<ExamPaperProp>>({})
 onMounted(() => {
@@ -84,6 +85,8 @@ const getQuestionsByExamPaperIdAndQuestionType = async () => {
 //切换题目类别
 const changeQuestionType = (questionType: number) => {
   activeQuestionType.value = questionType
+  activeIndex.value = 0
+  questionViewer.value = {}
   getQuestionsByExamPaperIdAndQuestionType()
 }
 
@@ -97,6 +100,14 @@ const viewQuestionInfo = (id: number) => {
 const changeActiveIndex = (id: number, index: number) => {
   activeIndex.value = index
   getQuestionViewerById(id)
+}
+
+//删除添加的题目
+const deleteHandler = async (questionId: number) => {
+  await delQuestionsByExamPaperIdAndQuestionIdApi({ examPaperId: examPaper.value.id, questionId })
+  activeIndex.value = 0
+  questionViewer.value = {}
+  getQuestionsByExamPaperIdAndQuestionType()
 }
 
 //重置表单
@@ -182,9 +193,9 @@ const resetHandler = () => {
       </div>
     </div>
     <div>
-      <div class="mb-[20px] h-[240px] bg-white px-[20px] pb-[10px]">
+      <div class="mb-[20px] h-[250px] bg-white px-[20px] pb-[10px]">
         <div class="py-[10px] text-[1.5em]">筛选题目</div>
-        <el-form :model="conditionApiParams">
+        <el-form size="default" :model="conditionApiParams">
           <el-form-item>
             <el-input clearable v-model="conditionApiParams.name" placeholder="请输入题目名称"></el-input>
           </el-form-item>
@@ -210,11 +221,11 @@ const resetHandler = () => {
           <el-button type="success" @click="getQuestionList">确定</el-button>
         </div>
       </div>
-      <el-table size="large" :data="tableData" style="width: 100%; height: calc(100vh - 395px)">
+      <el-table size="large" :data="tableData" style="width: 100%; height: calc(100vh - 400px)">
         <el-table-column prop="name" label="题目名称" width="120" />
         <el-table-column prop="questionTypeLabel" label="类型" width="90" />
         <el-table-column prop="difficultyLabel" label="难度" width="90" />
-        <el-table-column fixed="right" width="120px" label="查看/添加">
+        <el-table-column fixed="right" width="140" label="查看/添加">
           <template #default="scope">
             <el-button type="primary" :icon="View" circle @click="viewQuestionInfo(scope.row.id)"></el-button>
             <el-button type="success" :icon="DocumentAdd" circle @click="importQuestion(scope.row)" />
@@ -251,6 +262,9 @@ const resetHandler = () => {
         <div class="px-[20px] pb-[20px]">
           <div class="text-[1.5em]">题目解析</div>
           <div class="text-[1.2em] text-gray-500">{{ questionViewer.analysis }}</div>
+        </div>
+        <div class="flex justify-end px-[20px]">
+          <el-button type="danger" @click="deleteHandler(questionViewer.id)">删除</el-button>
         </div>
       </div>
     </div>

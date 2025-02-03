@@ -52,7 +52,7 @@
         "title": "导入试题",
         "isLink": "",
         "isHide": true,
-        "isFull": true,
+        "isFull": false,
         "isAffix": false,
         "isKeepAlive": true
       }

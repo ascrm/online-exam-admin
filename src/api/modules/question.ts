@@ -29,3 +29,6 @@ export const importQuestionApi = (params: any) => http.post(PORT1 + `/exam/quest
 
 //根据试卷id和题目类别查询当前试卷下的所有题目（包括相信信息）
 export const getQuestionsByExamPaperIdAndQuestionTypeApi = (params: any) => http.get(PORT1 + `/exam/question`, params)
+
+//根据试卷id和题目id删除已添加的题目
+export const delQuestionsByExamPaperIdAndQuestionIdApi = (params: any) => http.delete(PORT1 + `/exam/question`, params)

@@ -97,7 +97,7 @@ const columns = reactive<ColumnProps<User.ResUserList>[]>([
   { prop: 'description', label: '备注' },
   { prop: 'createdAt', label: '创建时间', width: 240 },
   { prop: 'updatedAt', label: '修改时间', width: 240 },
-  { prop: 'operation', label: '操作', fixed: 'right', width: 260 },
+  { prop: 'operation', label: '操作', fixed: 'right', width: 280 },
 ])
 
 // 删除试卷信息
