@@ -12,6 +12,7 @@ import {
   getQuestionViewerByIdApi,
   importQuestionApi,
 } from '@/api/modules/question'
+import { ElMessage } from 'element-plus'
 
 interface QuestionProp {
   id: number
@@ -39,10 +40,13 @@ interface ExamPaperProp {
 const activeIndex = ref(1)
 const activeQuestionType = ref(1)
 const examPaper = ref<Partial<ExamPaperProp>>({})
-onMounted(() => {
+onMounted(async () => {
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
-  getQuestionList()
-  getQuestionsByExamPaperIdAndQuestionType()
+  await getQuestionList()
+  await getQuestionsByExamPaperIdAndQuestionType()
+  await totalHandler(1)
+  await totalHandler(2)
+  await totalHandler(3)
 })
 
 //条件查询请求参数
@@ -68,8 +72,9 @@ const getQuestionViewerById = async (params: number) => {
 
 //导入题目
 const importQuestion = async (params: QuestionProp) => {
-  const resp = await importQuestionApi({ examPaperId: examPaper.value.id, id: params.id })
-  getQuestionsByExamPaperIdAndQuestionType()
+  await importQuestionApi({ examPaperId: examPaper.value.id, id: params.id })
+  await getQuestionsByExamPaperIdAndQuestionType()
+  plusTotalHandler(params)
 }
 
 //根据试卷id和题目类别查询当前试卷下的所有题目（包括相信信息）
@@ -103,11 +108,12 @@ const changeActiveIndex = (id: number, index: number) => {
 }
 
 //删除添加的题目
-const deleteHandler = async (questionId: number) => {
-  await delQuestionsByExamPaperIdAndQuestionIdApi({ examPaperId: examPaper.value.id, questionId })
+const deleteHandler = async (params: any) => {
+  await delQuestionsByExamPaperIdAndQuestionIdApi({ examPaperId: examPaper.value.id, questionId: params.id })
   activeIndex.value = 0
   questionViewer.value = {}
-  getQuestionsByExamPaperIdAndQuestionType()
+  await getQuestionsByExamPaperIdAndQuestionType()
+  reduceTotalHandler(params)
 }
 
 //重置表单
@@ -118,6 +124,42 @@ const resetHandler = () => {
     difficulty: undefined,
   }
 }
+
+//统计已录入的题目数量和分数
+const singleCount = ref(0)
+const multipleCount = ref(0)
+const judgeCount = ref(0)
+const totalCount = ref(0)
+const totalScores = ref(0)
+const totalHandler = async (questionType: number) => {
+  const { data } = await getQuestionsByExamPaperIdAndQuestionTypeApi({
+    examPaperId: examPaper.value.id,
+    questionType,
+  })
+  if (questionType === 1) singleCount.value = data.length
+  if (questionType === 2) multipleCount.value = data.length
+  if (questionType === 3) judgeCount.value = data.length
+  totalCount.value += data.length
+  totalScores.value += data.reduce((acc, cur) => acc + cur.score, 0)
+}
+
+//题目数量和分数变化
+const plusTotalHandler = (params: any) => {
+  totalCount.value += 1
+  totalScores.value += params.score
+
+  if (params.questionType === 1) singleCount.value += 1
+  if (params.questionType === 2) multipleCount.value += 1
+  if (params.questionType === 3) judgeCount.value += 1
+}
+
+const reduceTotalHandler = (params: any) => {
+  totalCount.value -= 1
+  totalScores.value -= params.score
+  if (params.questionType === 1) singleCount.value -= 1
+  if (params.questionType === 2) multipleCount.value -= 1
+  if (params.questionType === 3) judgeCount.value -= 1
+}
 </script>
 
 <template>
@@ -125,8 +167,8 @@ const resetHandler = () => {
     <div class="h-full bg-white">
       <div class="p-[20px] text-center text-[2em]">{{ examPaper.name }}</div>
       <div class="flex justify-between px-[10px] text-[1.2em]">
-        <div>已录入题目数：20</div>
-        <div>总分：100</div>
+        <div>已录入题目数：{{ totalCount }}</div>
+        <div>总分：{{ totalScores }}</div>
       </div>
 
       <div class="mt-[30px] px-[5px] [&_.el-icon]:mr-[5px]">
@@ -142,7 +184,7 @@ const resetHandler = () => {
             <el-icon><Eleme /></el-icon>
             单选题
           </template>
-          <template #right>20</template>
+          <template #right>{{ singleCount }}</template>
         </QuestionTypeItem>
         <QuestionTypeItem
           :class="activeQuestionType === 2 && 'bg-gray-100 text-blue-500'"
@@ -152,7 +194,7 @@ const resetHandler = () => {
             <el-icon><ElementPlus /></el-icon>
             多选题
           </template>
-          <template #right>20</template>
+          <template #right>{{ multipleCount }}</template>
         </QuestionTypeItem>
         <QuestionTypeItem
           :class="activeQuestionType === 3 && 'bg-gray-100 text-blue-500'"
@@ -162,7 +204,7 @@ const resetHandler = () => {
             <el-icon><Finished /></el-icon>
             判断题
           </template>
-          <template #right>20</template>
+          <template #right>{{ judgeCount }}</template>
         </QuestionTypeItem>
       </div>
       <div class="mt-[40px] grid grid-cols-5 gap-4 px-[20px]">
@@ -264,7 +306,7 @@ const resetHandler = () => {
           <div class="text-[1.2em] text-gray-500">{{ questionViewer.analysis }}</div>
         </div>
         <div class="flex justify-end px-[20px]">
-          <el-button type="danger" @click="deleteHandler(questionViewer.id)">删除</el-button>
+          <el-button type="danger" @click="deleteHandler(questionViewer)">删除</el-button>
         </div>
       </div>
     </div>
