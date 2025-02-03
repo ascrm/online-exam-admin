@@ -12,7 +12,6 @@ import {
   getQuestionViewerByIdApi,
   importQuestionApi,
 } from '@/api/modules/question'
-import { ElMessage } from 'element-plus'
 
 interface QuestionProp {
   id: number
