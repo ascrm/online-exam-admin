@@ -22,13 +22,14 @@ onMounted(() => {
 
 //根据分类以及试卷id获取题目列表
 const questionList = ref([])
+const totalCount = ref(0)
 const getQuestionList = async () => {
   const { data } = await getQuestionsByExamPaperIdAndQuestionTypeApi({
     examPaperId: JSON.parse(localStorage.getItem('examPaper')).id,
     questionType: props.questionType,
   })
   questionList.value = data
-  console.log(data)
+  totalCount.value = data.length
 }
 
 const emit = defineEmits(['changeActiveItem'])
@@ -47,7 +48,7 @@ const changeActiveIndex = async id => {
         <slot name="left"></slot>
       </div>
       <div class="text-[1.5em]">
-        <slot name="right"></slot>
+        {{ totalCount }}
       </div>
     </div>
     <div class="mt-[5px] grid grid-cols-5 gap-4 px-[20px]">
