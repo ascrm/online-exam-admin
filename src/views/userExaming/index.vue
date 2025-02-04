@@ -4,6 +4,7 @@
 import { onMounted, ref } from 'vue'
 import { Finished } from '@element-plus/icons-vue'
 import examOptionItem from './components/examOptionItem.vue'
+import { addHistoryExamApi } from '@/api/modules/historyExam'
 
 interface QuestionProp {
   id: number
@@ -36,7 +37,13 @@ interface ExamPaperProp {
 const examPaper = ref<Partial<ExamPaperProp>>({})
 onMounted(async () => {
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
+  addHistoryExam()
 })
+
+//新建历史记录
+const addHistoryExam = async () => {
+  await addHistoryExamApi({ examPaperId: examPaper.value.id })
+}
 
 //切换activeItem
 const activeItemId = ref(0)
@@ -46,10 +53,15 @@ const changeActiveItem = (data: any, id: any) => {
   questionViewer.value = data
 }
 
-const historyExamQuestion = ref({
-  questionId: '',
-  answer: '',
-})
+const historyExamQuestion = ref<{
+  questionId?: string
+  singleAnswer?: string
+  multipleAnswer?: string[]
+  judgeAnswer?: string
+}>({})
+
+//提交答案
+const submitHandler = () => {}
 </script>
 
 <template>
@@ -113,11 +125,25 @@ const historyExamQuestion = ref({
             {{ questionViewer.description }}
           </div>
           <div class="cursor-default pb-[20px]" v-if="questionViewer.questionType === 1">
-            <el-radio-group v-model="historyExamQuestion.answer" class="block">
+            <el-radio-group v-model="historyExamQuestion.singleAnswer" class="block">
               <el-radio value="A">{{ questionViewer.optionA }}</el-radio>
               <el-radio value="B">{{ questionViewer.optionB }}</el-radio>
               <el-radio value="C">{{ questionViewer.optionC }}</el-radio>
               <el-radio value="D">{{ questionViewer.optionD }}</el-radio>
+            </el-radio-group>
+          </div>
+          <div @change="submitHandler" class="cursor-default pb-[20px]" v-if="questionViewer.questionType === 2">
+            <el-checkbox-group v-model="historyExamQuestion.multipleAnswer">
+              <el-checkbox :label="questionViewer.optionA" value="A" />
+              <el-checkbox :label="questionViewer.optionB" value="B" />
+              <el-checkbox :label="questionViewer.optionC" value="C" />
+              <el-checkbox :label="questionViewer.optionD" value="D" />
+            </el-checkbox-group>
+          </div>
+          <div class="cursor-default pb-[20px]" v-if="questionViewer.questionType === 3">
+            <el-radio-group v-model="historyExamQuestion.singleAnswer" class="block">
+              <el-radio label="正确" value="1" />
+              <el-radio label="错误" value="0" />
             </el-radio-group>
           </div>
         </div>
@@ -130,7 +156,15 @@ const historyExamQuestion = ref({
 .el-radio {
   display: block;
   height: auto;
-  padding: 10px 20px;
+  padding: 20px 40px;
   text-wrap: wrap;
+}
+.el-checkbox {
+  display: flex;
+  height: auto;
+  padding: 20px 40px;
+  text-wrap: wrap;
+
+  --el-checkbox-font-size: 16px;
 }
 </style>
