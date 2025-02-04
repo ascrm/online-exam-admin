@@ -57,15 +57,19 @@ const addHistoryExam = async () => {
 }
 
 //查询该用户当前试卷的所有题目历史记录
-const singleList = ref([])
-const multipleList = ref([])
-const judgeList = ref([])
+const singleList = ref<any[]>([])
+const multipleList = ref<any[]>([])
+const judgeList = ref<any[]>([])
 const getHistoryExamQuestions = async () => {
-  const { data }: any = await getHistoryExamQuestionsApi({ examPaperId: examPaper.value.id })
-  singleList.value = data.filter(item => item.questionType === 1)
-  multipleList.value = data.filter(item => item.questionType === 2)
-  judgeList.value = data.filter(item => item.questionType === 3)
-  examStore.setTemporaryQuestions(data)
+  let questionList = examStore.getTemporaryQuestions
+  if (questionList.length === 0) {
+    const { data } = await getHistoryExamQuestionsApi({ examPaperId: examPaper.value.id })
+    questionList = data as any[]
+  }
+  singleList.value = questionList.filter(item => item.questionType === 1)
+  multipleList.value = questionList.filter(item => item.questionType === 2)
+  judgeList.value = questionList.filter(item => item.questionType === 3)
+  examStore.setTemporaryQuestions(questionList)
 }
 
 //提交答案
