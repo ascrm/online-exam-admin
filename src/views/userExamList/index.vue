@@ -53,7 +53,7 @@ const getColor = () => {
       <div class="px-[10px] pb-[10px]">
         <div class="mt-[5px] text-[1.5em]">{{ item.name }}</div>
         <div class="mt-[5px] text-[1.2em]">作者：{{ item.createdBy }}</div>
-        <div class="mt-[5px] text-[1.2em]">创建时间:{{ item.createdAt }}</div>
+        <div class="mt-[5px] text-[1.2em]">创建时间:{{ item.createdAt.split(' ')[0] }}</div>
       </div>
     </div>
   </div>

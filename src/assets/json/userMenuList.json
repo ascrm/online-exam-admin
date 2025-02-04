@@ -37,7 +37,7 @@
         "icon": "Menu",
         "title": "考试",
         "isLink": "",
-        "isHide": false,
+        "isHide": true,
         "isFull": true,
         "isAffix": false,
         "isKeepAlive": false

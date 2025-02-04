@@ -10,6 +10,7 @@ import {
   getHistoryExamQuestionsApi,
   submitAnswerApi,
 } from '@/api/modules/historyExam'
+import router from '@/routers'
 
 interface QuestionProp {
   id: number
@@ -99,7 +100,7 @@ const getHistoryExamQuestions = async () => {
         </div>
         <div class="flex gap-16">
           <div>考试时间：{{ examPaper.duration }}</div>
-          <div><el-button type="primary">提交试卷</el-button></div>
+          <div><el-button @click="router.push('/userExamList')" size="large" type="primary">提交试卷</el-button></div>
         </div>
       </div>
     </div>
