@@ -4,7 +4,7 @@
 import { onMounted, ref } from 'vue'
 import { Finished } from '@element-plus/icons-vue'
 import examOptionItem from './components/examOptionItem.vue'
-import { addHistoryExamApi } from '@/api/modules/historyExam'
+import { addHistoryExamApi, getHistoryExamQuestionApi, submitAnswerApi } from '@/api/modules/historyExam'
 
 interface QuestionProp {
   id: number
@@ -46,22 +46,32 @@ const addHistoryExam = async () => {
 }
 
 //切换activeItem
-const activeItemId = ref(0)
-const questionViewer = ref<Partial<QuestionProp>>({})
-const changeActiveItem = (data: any, id: any) => {
-  activeItemId.value = id
-  questionViewer.value = data
+const activeItem = ref<Partial<QuestionProp>>({})
+const changeActiveItem = async (item: any) => {
+  // const resp = await getHistoryExamQuestionApi({ examPaperId: examPaper.value.id, questionId: item.id })
+  activeItem.value = item
 }
 
-const historyExamQuestion = ref<{
-  questionId?: string
+const questionAnswer = ref<{
   singleAnswer?: string
   multipleAnswer?: string[]
   judgeAnswer?: string
 }>({})
 
 //提交答案
-const submitHandler = () => {}
+const submittedItemIds = ref<any>([])
+const submitHandler = async (questionType: number) => {
+  if (questionType === 1) activeItem.value.answer = questionAnswer.value.singleAnswer
+  if (questionType === 2) activeItem.value.answer = questionAnswer.value.multipleAnswer?.join(',')
+  if (questionType === 3) activeItem.value.answer = questionAnswer.value.judgeAnswer
+  await submitAnswerApi({
+    examPaperId: examPaper.value.id,
+    questionType,
+    questionId: activeItem.value.id,
+    answer: activeItem.value.answer,
+  })
+  submittedItemIds.value.push(activeItem.value.id)
+}
 </script>
 
 <template>
@@ -86,19 +96,34 @@ const submitHandler = () => {}
             <div>题数</div>
           </div>
 
-          <examOptionItem @change-active-item="changeActiveItem" :active-item-id="activeItemId" :question-type="1">
+          <examOptionItem
+            @change-active-item="changeActiveItem"
+            :submitted-item-ids="submittedItemIds"
+            :active-item="activeItem"
+            :question-type="1"
+          >
             <template #left>
               <el-icon><Eleme /></el-icon>
               单选题
             </template>
           </examOptionItem>
-          <examOptionItem @change-active-item="changeActiveItem" :active-item-id="activeItemId" :question-type="2">
+          <examOptionItem
+            @change-active-item="changeActiveItem"
+            :submitted-item-ids="submittedItemIds"
+            :active-item="activeItem"
+            :question-type="2"
+          >
             <template #left>
               <el-icon><ElementPlus /></el-icon>
               多选题
             </template>
           </examOptionItem>
-          <examOptionItem @change-active-item="changeActiveItem" :active-item-id="activeItemId" :question-type="3">
+          <examOptionItem
+            @change-active-item="changeActiveItem"
+            :submitted-item-ids="submittedItemIds"
+            :active-item="activeItem"
+            :question-type="3"
+          >
             <template #left>
               <el-icon><Finished /></el-icon>
               判断题
@@ -108,42 +133,42 @@ const submitHandler = () => {}
       </div>
 
       <div style="height: calc(100vh - 90px)" class="bg-white">
-        <div v-if="questionViewer.id">
+        <div v-if="activeItem.id">
           <div class="flex items-center justify-between p-[20px]">
             <div class="flex items-center gap-3">
-              <div class="text-[2em]">{{ questionViewer.name }}</div>
+              <div class="text-[2em]">{{ activeItem.name }}</div>
               <div class="rounded-xl bg-gray-100 px-[10px] py-[5px] text-[1.2em] text-gray-500">
-                分数 {{ questionViewer.score }}
+                分数 {{ activeItem.score }}
               </div>
             </div>
             <div class="flex gap-3 text-[1.2em] text-gray-500">
-              <div>作者 {{ questionViewer.createdBy }}</div>
-              <div>创建时间 {{ questionViewer.updatedAt?.split(' ')[0] }}</div>
+              <div>作者 {{ activeItem.createdBy }}</div>
+              <div>创建时间 {{ activeItem.updatedAt?.split(' ')[0] }}</div>
             </div>
           </div>
           <div class="px-[20px] pb-[20px] text-[1.5em]">
-            {{ questionViewer.description }}
+            {{ activeItem.description }}
           </div>
-          <div class="cursor-default pb-[20px]" v-if="questionViewer.questionType === 1">
-            <el-radio-group v-model="historyExamQuestion.singleAnswer" class="block">
-              <el-radio value="A">{{ questionViewer.optionA }}</el-radio>
-              <el-radio value="B">{{ questionViewer.optionB }}</el-radio>
-              <el-radio value="C">{{ questionViewer.optionC }}</el-radio>
-              <el-radio value="D">{{ questionViewer.optionD }}</el-radio>
+          <div @change="submitHandler(1)" class="cursor-default pb-[20px]" v-if="activeItem.questionType === 1">
+            <el-radio-group v-model="questionAnswer.singleAnswer" class="block">
+              <el-radio value="A">{{ activeItem.optionA }}</el-radio>
+              <el-radio value="B">{{ activeItem.optionB }}</el-radio>
+              <el-radio value="C">{{ activeItem.optionC }}</el-radio>
+              <el-radio value="D">{{ activeItem.optionD }}</el-radio>
             </el-radio-group>
           </div>
-          <div @change="submitHandler" class="cursor-default pb-[20px]" v-if="questionViewer.questionType === 2">
-            <el-checkbox-group v-model="historyExamQuestion.multipleAnswer">
-              <el-checkbox :label="questionViewer.optionA" value="A" />
-              <el-checkbox :label="questionViewer.optionB" value="B" />
-              <el-checkbox :label="questionViewer.optionC" value="C" />
-              <el-checkbox :label="questionViewer.optionD" value="D" />
+          <div @change="submitHandler(2)" class="cursor-default pb-[20px]" v-if="activeItem.questionType === 2">
+            <el-checkbox-group v-model="questionAnswer.multipleAnswer">
+              <el-checkbox :label="activeItem.optionA" value="A" />
+              <el-checkbox :label="activeItem.optionB" value="B" />
+              <el-checkbox :label="activeItem.optionC" value="C" />
+              <el-checkbox :label="activeItem.optionD" value="D" />
             </el-checkbox-group>
           </div>
-          <div class="cursor-default pb-[20px]" v-if="questionViewer.questionType === 3">
-            <el-radio-group v-model="historyExamQuestion.singleAnswer" class="block">
-              <el-radio label="正确" value="1" />
-              <el-radio label="错误" value="0" />
+          <div @change="submitHandler(3)" class="cursor-default pb-[20px]" v-if="activeItem.questionType === 3">
+            <el-radio-group v-model="questionAnswer.singleAnswer" class="block">
+              <el-radio label="正确" value="T" />
+              <el-radio label="错误" value="F" />
             </el-radio-group>
           </div>
         </div>

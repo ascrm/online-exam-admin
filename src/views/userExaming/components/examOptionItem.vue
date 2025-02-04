@@ -3,16 +3,19 @@
 <script setup>
 import { cn } from '@/utils/cn'
 import { ref, defineProps, onMounted } from 'vue'
-import { getQuestionsByExamPaperIdAndQuestionTypeApi, getQuestionViewerByIdApi } from '@/api/modules/question'
+import { getQuestionsByExamPaperIdAndQuestionTypeApi } from '@/api/modules/question'
 
 const props = defineProps({
   questionType: {
     required: true,
     type: Number,
   },
-  activeItemId: {
+  activeItem: {
     required: true,
-    type: Number,
+  },
+  submittedItemIds: {
+    required: true,
+    type: Array,
   },
 })
 
@@ -34,9 +37,8 @@ const getQuestionList = async () => {
 
 const emit = defineEmits(['changeActiveItem'])
 //切换题目
-const changeActiveIndex = async id => {
-  const { data } = await getQuestionViewerByIdApi({ id })
-  emit('changeActiveItem', data, id)
+const changeActiveIndex = item => {
+  emit('changeActiveItem', item)
 }
 </script>
 
@@ -60,9 +62,9 @@ const changeActiveIndex = async id => {
         "
         v-for="(item, index) in questionList"
         :key="index"
-        @click="changeActiveIndex(item.id)"
+        @click="changeActiveIndex(item)"
       >
-        <div>
+        <div :class="props.submittedItemIds.includes(item.id) && 'hidden'">
           {{ index + 1 }}
         </div>
         <div :class="'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-green-300'">
@@ -71,7 +73,14 @@ const changeActiveIndex = async id => {
         <div :class="'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-red-300'">
           <el-icon class="text-red-600"><CloseBold /></el-icon>
         </div>
-        <div :class="'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-blue-300'">
+        <div
+          :class="
+            cn(
+              'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-blue-300',
+              props.submittedItemIds.includes(item.id) && 'flex',
+            )
+          "
+        >
           <el-icon class="text-blue-600"><SemiSelect /></el-icon>
         </div>
       </div>
