@@ -2,8 +2,7 @@
 
 <script setup>
 import { cn } from '@/utils/cn'
-import { ref, defineProps, onMounted } from 'vue'
-import { getQuestionsByExamPaperIdAndQuestionTypeApi } from '@/api/modules/question'
+import { defineProps } from 'vue'
 
 const props = defineProps({
   questionType: {
@@ -13,36 +12,15 @@ const props = defineProps({
   activeItem: {
     required: true,
   },
-  historyExamQuestionList: {
+  questionList: {
     required: true,
   },
 })
-
-onMounted(() => {
-  getQuestionList()
-})
-
-//根据分类以及试卷id获取题目列表
-const questionList = ref([])
-const totalCount = ref(0)
-const getQuestionList = async () => {
-  const { data } = await getQuestionsByExamPaperIdAndQuestionTypeApi({
-    examPaperId: JSON.parse(localStorage.getItem('examPaper')).id,
-    questionType: props.questionType,
-  })
-  questionList.value = data
-  totalCount.value = data.length
-}
 
 const emit = defineEmits(['changeActiveItem'])
 //切换题目
 const changeActiveIndex = item => {
   emit('changeActiveItem', item)
-}
-
-//active状态样式
-const activeStyle = item => {
-  return props.historyExamQuestionList.some(question => question.questionId === item.id && question.answer)
 }
 </script>
 
@@ -53,7 +31,7 @@ const activeStyle = item => {
         <slot name="left"></slot>
       </div>
       <div class="text-[1.5em]">
-        {{ totalCount }}
+        {{ props.questionList.length }}
       </div>
     </div>
     <div class="mt-[5px] grid grid-cols-5 gap-4 px-[20px]">
@@ -64,11 +42,11 @@ const activeStyle = item => {
             item.id === props.activeItem.id && 'bg-blue-300 text-blue-600',
           )
         "
-        v-for="(item, index) in questionList"
+        v-for="(item, index) in props.questionList"
         :key="index"
         @click="changeActiveIndex(item)"
       >
-        <div :class="activeStyle(item) && 'hidden'">
+        <div :class="item.answer && 'hidden'">
           {{ index + 1 }}
         </div>
         <div :class="'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-green-300'">
@@ -79,10 +57,7 @@ const activeStyle = item => {
         </div>
         <div
           :class="
-            cn(
-              'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-blue-300',
-              activeStyle(item) && 'flex',
-            )
+            cn('hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-blue-300', item.answer && 'flex')
           "
         >
           <el-icon class="text-blue-600"><SemiSelect /></el-icon>

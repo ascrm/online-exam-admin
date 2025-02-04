@@ -11,6 +11,7 @@ import {
   submitAnswerApi,
 } from '@/api/modules/historyExam'
 import router from '@/routers'
+import { useExamStore } from '@/stores/modules/exam'
 
 interface QuestionProp {
   id: number
@@ -40,6 +41,13 @@ interface ExamPaperProp {
   updatedAt: string
 }
 
+const questionAnswer = ref<{
+  singleAnswer?: string
+  multipleAnswer?: string[]
+  judgeAnswer?: string
+}>({})
+const activeItem = ref<Partial<QuestionProp>>({})
+const examStore = useExamStore()
 const examPaper = ref<Partial<ExamPaperProp>>({})
 onMounted(async () => {
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
@@ -52,41 +60,72 @@ const addHistoryExam = async () => {
   await addHistoryExamApi({ examPaperId: examPaper.value.id })
 }
 
-//切换activeItem
-const activeItem = ref<Partial<QuestionProp>>({})
-const changeActiveItem = async (item: any) => {
-  const { data }: any = await getHistoryExamQuestionApi({ examPaperId: examPaper.value.id, questionId: item.id })
-  if (item.questionType === 1) questionAnswer.value.singleAnswer = data.answer
-  if (item.questionType === 2) questionAnswer.value.multipleAnswer = data.answer?.split(',')
-  if (item.questionType === 3) questionAnswer.value.judgeAnswer = data.answer
-  activeItem.value = item
-  await getHistoryExamQuestions()
-}
-
-const questionAnswer = ref<{
-  singleAnswer?: string
-  multipleAnswer?: string[]
-  judgeAnswer?: string
-}>({})
-
-const submitHandler = async (questionType: number) => {
-  let answer
-  if (questionType === 1) answer = questionAnswer.value.singleAnswer
-  if (questionType === 2) answer = questionAnswer.value.multipleAnswer?.join(',')
-  if (questionType === 3) answer = questionAnswer.value.judgeAnswer
-  await submitAnswerApi({
-    examPaperId: examPaper.value.id,
-    questionType,
-    questionId: activeItem.value.id,
-    answer,
-  })
-}
-
 //查询该用户当前试卷的所有题目历史记录
-const historyExamQuestions = ref([])
+const singleList = ref([])
+const multipleList = ref([])
+const judgeList = ref([])
 const getHistoryExamQuestions = async () => {
   const { data }: any = await getHistoryExamQuestionsApi({ examPaperId: examPaper.value.id })
-  historyExamQuestions.value = data
+  singleList.value = data.filter(item => item.questionType === 1)
+  multipleList.value = data.filter(item => item.questionType === 2)
+  judgeList.value = data.filter(item => item.questionType === 3)
+  examStore.setTemporaryQuestions(data)
+}
+
+//提交答案
+const submitHandler = async (question: any) => {
+  if (question.questionType === 1) question.answer = questionAnswer.value.singleAnswer
+  if (question.questionType === 2) question.answer = questionAnswer.value.multipleAnswer?.join(',')
+  if (question.questionType === 3) question.answer = questionAnswer.value.judgeAnswer
+  examStore.updateTemporaryQuestion(question)
+}
+
+//切换activeItem
+const changeActiveItem = (item: any) => {
+  activeItem.value = examStore.getTemporaryQuestionById(item.id)
+  if (activeItem.value.questionType === 1) questionAnswer.value.singleAnswer = activeItem.value.answer
+  if (activeItem.value.questionType === 2) questionAnswer.value.multipleAnswer = activeItem.value.answer?.split(',')
+  if (activeItem.value.questionType === 3) questionAnswer.value.judgeAnswer = activeItem.value.answer
+}
+
+//上一题下一题
+const singleRef = ref()
+const multipleRef = ref()
+const judgeRef = ref()
+const preVisible = ref(true)
+const nextVisible = ref(true)
+const jumpHandler = async (type: any) => {
+  if (activeItem.value.questionType === 1) {
+    commonFunction2(singleRef, activeItem.value.id, type)
+  }
+  if (activeItem.value.questionType === 2) {
+    commonFunction2(multipleRef, activeItem.value.id, type)
+  }
+  if (activeItem.value.questionType === 3) {
+    commonFunction2(judgeRef, activeItem.value.id, type)
+  }
+}
+
+const commonFunction1 = (domRef: any, activeItemId: any) => {
+  // const index = domRef.value.questionList.findIndex(item => item.id === activeItemId)
+  // preVisible.value = index === 0 ? false : true
+  // nextVisible.value = index === domRef.value.questionList.length - 1 ? false : true
+}
+
+const commonFunction2 = (domRef: any, activeItemId: any, type: any) => {
+  // const index = domRef.value.questionList.findIndex(item => item.id === activeItemId)
+  // //说明是上一题
+  // if (type === 1) {
+  //   preVisible.value = index - 1 === 0 ? false : true
+  //   nextVisible.value = true
+  //   activeItem.value = domRef.value.questionList[index - 1]
+  // }
+  // //说明下一题
+  // if (type === 2) {
+  //   preVisible.value = true
+  //   nextVisible.value = index + 1 === domRef.value.questionList.length - 1 ? false : true
+  //   activeItem.value = domRef.value.questionList[index + 1]
+  // }
 }
 </script>
 
@@ -113,8 +152,9 @@ const getHistoryExamQuestions = async () => {
           </div>
 
           <examOptionItem
+            ref="singleRef"
             @change-active-item="changeActiveItem"
-            :history-exam-question-list="historyExamQuestions"
+            :question-list="singleList"
             :active-item="activeItem"
             :question-type="1"
           >
@@ -124,8 +164,9 @@ const getHistoryExamQuestions = async () => {
             </template>
           </examOptionItem>
           <examOptionItem
+            ref="multipleRef"
             @change-active-item="changeActiveItem"
-            :history-exam-question-list="historyExamQuestions"
+            :question-list="multipleList"
             :active-item="activeItem"
             :question-type="2"
           >
@@ -135,8 +176,9 @@ const getHistoryExamQuestions = async () => {
             </template>
           </examOptionItem>
           <examOptionItem
+            ref="judgeRef"
             @change-active-item="changeActiveItem"
-            :history-exam-question-list="historyExamQuestions"
+            :question-list="judgeList"
             :active-item="activeItem"
             :question-type="3"
           >
@@ -159,13 +201,17 @@ const getHistoryExamQuestions = async () => {
             </div>
             <div class="flex gap-3 text-[1.2em] text-gray-500">
               <div>作者 {{ activeItem.createdBy }}</div>
-              <div>创建时间 {{ activeItem.updatedAt?.split(' ')[0] }}</div>
+              <div>创建时间 {{ activeItem.updatedAt?.split('T')[0] }}</div>
             </div>
           </div>
           <div class="px-[20px] pb-[20px] text-[1.5em]">
             {{ activeItem.description }}
           </div>
-          <div @change="submitHandler(1)" class="cursor-default pb-[20px]" v-if="activeItem.questionType === 1">
+          <div
+            @change="submitHandler(activeItem)"
+            class="cursor-default pb-[20px]"
+            v-if="activeItem.questionType === 1"
+          >
             <el-radio-group v-model="questionAnswer.singleAnswer" class="block">
               <el-radio value="A">{{ activeItem.optionA }}</el-radio>
               <el-radio value="B">{{ activeItem.optionB }}</el-radio>
@@ -173,7 +219,11 @@ const getHistoryExamQuestions = async () => {
               <el-radio value="D">{{ activeItem.optionD }}</el-radio>
             </el-radio-group>
           </div>
-          <div @change="submitHandler(2)" class="cursor-default pb-[20px]" v-if="activeItem.questionType === 2">
+          <div
+            @change="submitHandler(activeItem)"
+            class="cursor-default pb-[20px]"
+            v-if="activeItem.questionType === 2"
+          >
             <el-checkbox-group v-model="questionAnswer.multipleAnswer">
               <el-checkbox :label="activeItem.optionA" value="A" />
               <el-checkbox :label="activeItem.optionB" value="B" />
@@ -181,11 +231,25 @@ const getHistoryExamQuestions = async () => {
               <el-checkbox :label="activeItem.optionD" value="D" />
             </el-checkbox-group>
           </div>
-          <div @change="submitHandler(3)" class="cursor-default pb-[20px]" v-if="activeItem.questionType === 3">
+          <div
+            @change="submitHandler(activeItem)"
+            class="cursor-default pb-[20px]"
+            v-if="activeItem.questionType === 3"
+          >
             <el-radio-group v-model="questionAnswer.judgeAnswer" class="block">
               <el-radio label="正确" value="T" />
               <el-radio label="错误" value="F" />
             </el-radio-group>
+          </div>
+          <div>
+            <div class="mx-auto flex w-[80%] justify-between">
+              <el-button :class="!preVisible && 'invisible'" type="primary" size="large" @click="jumpHandler(1)">
+                上一题
+              </el-button>
+              <el-button :class="!nextVisible && 'invisible'" type="primary" size="large" @click="jumpHandler(2)">
+                下一题
+              </el-button>
+            </div>
           </div>
         </div>
       </div>
