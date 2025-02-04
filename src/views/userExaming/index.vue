@@ -4,7 +4,12 @@
 import { onMounted, ref } from 'vue'
 import { Finished } from '@element-plus/icons-vue'
 import examOptionItem from './components/examOptionItem.vue'
-import { addHistoryExamApi, getHistoryExamQuestionApi, submitAnswerApi } from '@/api/modules/historyExam'
+import {
+  addHistoryExamApi,
+  getHistoryExamQuestionApi,
+  getHistoryExamQuestionsApi,
+  submitAnswerApi,
+} from '@/api/modules/historyExam'
 
 interface QuestionProp {
   id: number
@@ -38,6 +43,7 @@ const examPaper = ref<Partial<ExamPaperProp>>({})
 onMounted(async () => {
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
   addHistoryExam()
+  getHistoryExamQuestions()
 })
 
 //新建历史记录
@@ -48,8 +54,12 @@ const addHistoryExam = async () => {
 //切换activeItem
 const activeItem = ref<Partial<QuestionProp>>({})
 const changeActiveItem = async (item: any) => {
-  // const resp = await getHistoryExamQuestionApi({ examPaperId: examPaper.value.id, questionId: item.id })
+  const { data }: any = await getHistoryExamQuestionApi({ examPaperId: examPaper.value.id, questionId: item.id })
+  if (item.questionType === 1) questionAnswer.value.singleAnswer = data.answer
+  if (item.questionType === 2) questionAnswer.value.multipleAnswer = data.answer?.split(',')
+  if (item.questionType === 3) questionAnswer.value.judgeAnswer = data.answer
   activeItem.value = item
+  await getHistoryExamQuestions()
 }
 
 const questionAnswer = ref<{
@@ -58,19 +68,24 @@ const questionAnswer = ref<{
   judgeAnswer?: string
 }>({})
 
-//提交答案
-const submittedItemIds = ref<any>([])
 const submitHandler = async (questionType: number) => {
-  if (questionType === 1) activeItem.value.answer = questionAnswer.value.singleAnswer
-  if (questionType === 2) activeItem.value.answer = questionAnswer.value.multipleAnswer?.join(',')
-  if (questionType === 3) activeItem.value.answer = questionAnswer.value.judgeAnswer
+  let answer
+  if (questionType === 1) answer = questionAnswer.value.singleAnswer
+  if (questionType === 2) answer = questionAnswer.value.multipleAnswer?.join(',')
+  if (questionType === 3) answer = questionAnswer.value.judgeAnswer
   await submitAnswerApi({
     examPaperId: examPaper.value.id,
     questionType,
     questionId: activeItem.value.id,
-    answer: activeItem.value.answer,
+    answer,
   })
-  submittedItemIds.value.push(activeItem.value.id)
+}
+
+//查询该用户当前试卷的所有题目历史记录
+const historyExamQuestions = ref([])
+const getHistoryExamQuestions = async () => {
+  const { data }: any = await getHistoryExamQuestionsApi({ examPaperId: examPaper.value.id })
+  historyExamQuestions.value = data
 }
 </script>
 
@@ -98,7 +113,7 @@ const submitHandler = async (questionType: number) => {
 
           <examOptionItem
             @change-active-item="changeActiveItem"
-            :submitted-item-ids="submittedItemIds"
+            :history-exam-question-list="historyExamQuestions"
             :active-item="activeItem"
             :question-type="1"
           >
@@ -109,7 +124,7 @@ const submitHandler = async (questionType: number) => {
           </examOptionItem>
           <examOptionItem
             @change-active-item="changeActiveItem"
-            :submitted-item-ids="submittedItemIds"
+            :history-exam-question-list="historyExamQuestions"
             :active-item="activeItem"
             :question-type="2"
           >
@@ -120,7 +135,7 @@ const submitHandler = async (questionType: number) => {
           </examOptionItem>
           <examOptionItem
             @change-active-item="changeActiveItem"
-            :submitted-item-ids="submittedItemIds"
+            :history-exam-question-list="historyExamQuestions"
             :active-item="activeItem"
             :question-type="3"
           >
@@ -166,7 +181,7 @@ const submitHandler = async (questionType: number) => {
             </el-checkbox-group>
           </div>
           <div @change="submitHandler(3)" class="cursor-default pb-[20px]" v-if="activeItem.questionType === 3">
-            <el-radio-group v-model="questionAnswer.singleAnswer" class="block">
+            <el-radio-group v-model="questionAnswer.judgeAnswer" class="block">
               <el-radio label="正确" value="T" />
               <el-radio label="错误" value="F" />
             </el-radio-group>

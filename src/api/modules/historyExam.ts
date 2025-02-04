@@ -11,3 +11,6 @@ export const submitAnswerApi = (params: any) => http.post(PORT1 + `/historyExamQ
 
 //查询单条历史记录
 export const getHistoryExamQuestionApi = (params: any) => http.get(PORT1 + `/historyExamQuestion`, params)
+
+//查询历史记录列表
+export const getHistoryExamQuestionsApi = (params: any) => http.get(PORT1 + `/historyExamQuestions`, params)

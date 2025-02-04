@@ -13,9 +13,8 @@ const props = defineProps({
   activeItem: {
     required: true,
   },
-  submittedItemIds: {
+  historyExamQuestionList: {
     required: true,
-    type: Array,
   },
 })
 
@@ -40,6 +39,11 @@ const emit = defineEmits(['changeActiveItem'])
 const changeActiveIndex = item => {
   emit('changeActiveItem', item)
 }
+
+//active状态样式
+const activeStyle = item => {
+  return props.historyExamQuestionList.some(question => question.questionId === item.id && question.answer)
+}
 </script>
 
 <template>
@@ -57,14 +61,14 @@ const changeActiveIndex = item => {
         :class="
           cn(
             'flex h-[50px] cursor-pointer items-center justify-center rounded-md bg-gray-100 text-[1.5em] hover:bg-blue-300 hover:text-blue-600',
-            item.id === props.activeItemId && 'bg-blue-300 text-blue-600',
+            item.id === props.activeItem.id && 'bg-blue-300 text-blue-600',
           )
         "
         v-for="(item, index) in questionList"
         :key="index"
         @click="changeActiveIndex(item)"
       >
-        <div :class="props.submittedItemIds.includes(item.id) && 'hidden'">
+        <div :class="activeStyle(item) && 'hidden'">
           {{ index + 1 }}
         </div>
         <div :class="'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-green-300'">
@@ -77,7 +81,7 @@ const changeActiveIndex = item => {
           :class="
             cn(
               'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-blue-300',
-              props.submittedItemIds.includes(item.id) && 'flex',
+              activeStyle(item) && 'flex',
             )
           "
         >
