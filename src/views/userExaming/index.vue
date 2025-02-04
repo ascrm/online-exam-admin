@@ -4,14 +4,10 @@
 import { onMounted, ref } from 'vue'
 import { Finished } from '@element-plus/icons-vue'
 import examOptionItem from './components/examOptionItem.vue'
-import {
-  addHistoryExamApi,
-  getHistoryExamQuestionApi,
-  getHistoryExamQuestionsApi,
-  submitAnswerApi,
-} from '@/api/modules/historyExam'
+import { addHistoryExamApi, getHistoryExamQuestionsApi } from '@/api/modules/historyExam'
 import router from '@/routers'
 import { useExamStore } from '@/stores/modules/exam'
+import { cn } from '@/utils/cn'
 
 interface QuestionProp {
   id: number
@@ -86,46 +82,30 @@ const changeActiveItem = (item: any) => {
   if (activeItem.value.questionType === 1) questionAnswer.value.singleAnswer = activeItem.value.answer
   if (activeItem.value.questionType === 2) questionAnswer.value.multipleAnswer = activeItem.value.answer?.split(',')
   if (activeItem.value.questionType === 3) questionAnswer.value.judgeAnswer = activeItem.value.answer
+  const questions = examStore.getTemporaryQuestions
+  const typeQuestions = questions.filter(item => item.questionType === activeItem.value.questionType)
+  const index = typeQuestions.findIndex(item => item.id === activeItem.value.id)
+  preVisible.value = index - 1 < 0 ? false : true
+  nextVisible.value = index + 1 > typeQuestions.length - 1 ? false : true
 }
 
 //上一题下一题
-const singleRef = ref()
-const multipleRef = ref()
-const judgeRef = ref()
 const preVisible = ref(true)
 const nextVisible = ref(true)
 const jumpHandler = async (type: any) => {
-  if (activeItem.value.questionType === 1) {
-    commonFunction2(singleRef, activeItem.value.id, type)
+  const questions = examStore.getTemporaryQuestions
+  const typeQuestions = questions.filter(item => item.questionType === activeItem.value.questionType)
+  const index = typeQuestions.findIndex(item => item.id === activeItem.value.id)
+  if (type === 1) {
+    preVisible.value = index - 2 < 0 ? false : true
+    nextVisible.value = true
+    activeItem.value = typeQuestions[index - 1]
   }
-  if (activeItem.value.questionType === 2) {
-    commonFunction2(multipleRef, activeItem.value.id, type)
+  if (type === 2) {
+    nextVisible.value = index + 2 > typeQuestions.length - 1 ? false : true
+    preVisible.value = true
+    activeItem.value = typeQuestions[index + 1]
   }
-  if (activeItem.value.questionType === 3) {
-    commonFunction2(judgeRef, activeItem.value.id, type)
-  }
-}
-
-const commonFunction1 = (domRef: any, activeItemId: any) => {
-  // const index = domRef.value.questionList.findIndex(item => item.id === activeItemId)
-  // preVisible.value = index === 0 ? false : true
-  // nextVisible.value = index === domRef.value.questionList.length - 1 ? false : true
-}
-
-const commonFunction2 = (domRef: any, activeItemId: any, type: any) => {
-  // const index = domRef.value.questionList.findIndex(item => item.id === activeItemId)
-  // //说明是上一题
-  // if (type === 1) {
-  //   preVisible.value = index - 1 === 0 ? false : true
-  //   nextVisible.value = true
-  //   activeItem.value = domRef.value.questionList[index - 1]
-  // }
-  // //说明下一题
-  // if (type === 2) {
-  //   preVisible.value = true
-  //   nextVisible.value = index + 1 === domRef.value.questionList.length - 1 ? false : true
-  //   activeItem.value = domRef.value.questionList[index + 1]
-  // }
 }
 </script>
 
@@ -152,7 +132,6 @@ const commonFunction2 = (domRef: any, activeItemId: any, type: any) => {
           </div>
 
           <examOptionItem
-            ref="singleRef"
             @change-active-item="changeActiveItem"
             :question-list="singleList"
             :active-item="activeItem"
@@ -164,7 +143,6 @@ const commonFunction2 = (domRef: any, activeItemId: any, type: any) => {
             </template>
           </examOptionItem>
           <examOptionItem
-            ref="multipleRef"
             @change-active-item="changeActiveItem"
             :question-list="multipleList"
             :active-item="activeItem"
@@ -176,7 +154,6 @@ const commonFunction2 = (domRef: any, activeItemId: any, type: any) => {
             </template>
           </examOptionItem>
           <examOptionItem
-            ref="judgeRef"
             @change-active-item="changeActiveItem"
             :question-list="judgeList"
             :active-item="activeItem"
@@ -243,10 +220,20 @@ const commonFunction2 = (domRef: any, activeItemId: any, type: any) => {
           </div>
           <div>
             <div class="mx-auto flex w-[80%] justify-between">
-              <el-button :class="!preVisible && 'invisible'" type="primary" size="large" @click="jumpHandler(1)">
+              <el-button
+                :class="cn('invisible', preVisible && 'visible')"
+                type="primary"
+                size="large"
+                @click="jumpHandler(1)"
+              >
                 上一题
               </el-button>
-              <el-button :class="!nextVisible && 'invisible'" type="primary" size="large" @click="jumpHandler(2)">
+              <el-button
+                :class="cn('invisible', nextVisible && 'visible')"
+                size="large"
+                type="primary"
+                @click="jumpHandler(2)"
+              >
                 下一题
               </el-button>
             </div>
