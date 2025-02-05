@@ -50,7 +50,8 @@ onMounted(async () => {
   // 监听浏览器的 `beforeunload` 事件，防止页面刷新或回退
   window.addEventListener('beforeunload', handleBeforeUnload)
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
-  getHistoryExamQuestions()
+  await addHistoryExam()
+  await getHistoryExamQuestions()
   totalSeconds = (examPaper.value.duration as number) * 60
   interval = setInterval(updateTimer, 1000) // 每秒更新一次倒计时
   updateTimer() // 初次调用以显示初始时间
@@ -141,7 +142,8 @@ const routerPushHandler = async () => {
   const params = questions.map(item => ({ examPaperId: examPaper.value.id, questionId: item.id, ...item }))
   await submitAnswerApi(params)
   addHistoryExam()
-  examStore.clearTemporaryQuestions()
+  // 在组件卸载时移除 `beforeunload` 事件监听器
+  window.removeEventListener('beforeunload', handleBeforeUnload)
   router.push('/userExamList')
 }
 
