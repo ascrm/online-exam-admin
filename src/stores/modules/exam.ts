@@ -1,7 +1,7 @@
 /** @format */
 
 import { defineStore } from 'pinia'
-import { get } from 'sortablejs'
+import piniaPersistConfig from '../helper/persist'
 
 export const useExamStore = defineStore({
   id: 'exam',
@@ -26,4 +26,5 @@ export const useExamStore = defineStore({
       }
     },
   },
+  persist: piniaPersistConfig('exam'),
 })

@@ -83,9 +83,7 @@ const submitHandler = async (question: any) => {
 //切换activeItem
 const changeActiveItem = (item: any) => {
   activeItem.value = examStore.getTemporaryQuestionById(item.id)
-  if (activeItem.value.questionType === 1) questionAnswer.value.singleAnswer = activeItem.value.answer
-  if (activeItem.value.questionType === 2) questionAnswer.value.multipleAnswer = activeItem.value.answer?.split(',')
-  if (activeItem.value.questionType === 3) questionAnswer.value.judgeAnswer = activeItem.value.answer
+  changeAnswer()
   const questions = examStore.getTemporaryQuestions
   const typeQuestions = questions.filter(item => item.questionType === activeItem.value.questionType)
   const index = typeQuestions.findIndex(item => item.id === activeItem.value.id)
@@ -104,12 +102,20 @@ const jumpHandler = async (type: any) => {
     preVisible.value = index - 2 < 0 ? false : true
     nextVisible.value = true
     activeItem.value = typeQuestions[index - 1]
+    changeAnswer()
   }
   if (type === 2) {
     nextVisible.value = index + 2 > typeQuestions.length - 1 ? false : true
     preVisible.value = true
     activeItem.value = typeQuestions[index + 1]
+    changeAnswer()
   }
+}
+
+const changeAnswer = () => {
+  if (activeItem.value.questionType === 1) questionAnswer.value.singleAnswer = activeItem.value.answer
+  if (activeItem.value.questionType === 2) questionAnswer.value.multipleAnswer = activeItem.value.answer?.split(',')
+  if (activeItem.value.questionType === 3) questionAnswer.value.judgeAnswer = activeItem.value.answer
 }
 </script>
 
