@@ -1,13 +1,14 @@
 <!-- @format -->
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { Finished } from '@element-plus/icons-vue'
 import examOptionItem from './components/examOptionItem.vue'
 import { addHistoryExamApi, getHistoryExamQuestionsApi, submitAnswerApi } from '@/api/modules/historyExam'
 import router from '@/routers'
 import { useExamStore } from '@/stores/modules/exam'
 import { cn } from '@/utils/cn'
+import { ElMessage, ElNotification } from 'element-plus'
 
 interface QuestionProp {
   id: number
@@ -49,6 +50,14 @@ onMounted(async () => {
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
   addHistoryExam()
   getHistoryExamQuestions()
+  // totalSeconds = (examPaper.value.duration as number) * 60
+  totalSeconds = 302
+  interval = setInterval(updateTimer, 1000) // 每秒更新一次倒计时
+  updateTimer() // 初次调用以显示初始时间
+})
+
+onUnmounted(() => {
+  clearInterval(interval) // 清理定时器，避免内存泄漏
 })
 
 //新建历史记录
@@ -117,11 +126,56 @@ const changeAnswer = () => {
   if (activeItem.value.questionType === 3) questionAnswer.value.judgeAnswer = activeItem.value.answer
 }
 
+//提交试卷
 const routerPushHandler = async () => {
   const questions = examStore.getTemporaryQuestions
   const params = questions.map(item => ({ examPaperId: examPaper.value.id, questionId: item.id, ...item }))
   await submitAnswerApi(params)
-  console.log('你无敌了')
+  router.push('/userExamList')
+}
+
+let totalSeconds
+const hours = ref(Math.floor(totalSeconds / 3600)) // 小时
+const minutes = ref(Math.floor((totalSeconds % 3600) / 60)) // 分钟
+const seconds = ref(totalSeconds % 60) // 秒
+let interval
+//倒计时功能
+const updateTimer = () => {
+  hours.value = Math.floor(totalSeconds / 3600)
+  minutes.value = Math.floor((totalSeconds % 3600) / 60)
+  seconds.value = totalSeconds % 60
+
+  if (totalSeconds == 300) {
+    ElNotification({
+      type: 'warning',
+      title: '考试提醒',
+      message: `考试时间还剩5分钟,请尽快完成试卷！`,
+      position: 'top-left',
+    })
+  }
+
+  if (totalSeconds == 10) {
+    ElNotification({
+      type: 'warning',
+      title: '考试提醒',
+      message: `考试时间还剩10秒钟,即将自动交卷`,
+      position: 'top-left',
+    })
+  }
+
+  if (totalSeconds == 0) {
+    clearInterval(interval)
+    routerPushHandler()
+  }
+  totalSeconds-- // 每秒减少一秒
+}
+
+const open = () => {
+  ElNotification({
+    title: '温馨提示',
+    message: `上传文件大小不能超过MB！`,
+    type: 'warning',
+  })
 }
 </script>
 
@@ -134,7 +188,7 @@ const routerPushHandler = async () => {
           <div>{{ examPaper.name }}</div>
         </div>
         <div class="flex gap-16">
-          <div>考试时间：{{ examPaper.duration }}</div>
+          <div>考试时间：{{ hours }}:{{ minutes }}:{{ seconds }}</div>
           <div><el-button @click="routerPushHandler" size="large" type="primary">提交试卷</el-button></div>
         </div>
       </div>
