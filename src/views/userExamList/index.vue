@@ -2,19 +2,19 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { getExamPaperByConditionApi } from '@/api/modules/examPaper'
+import { getUserExamListApi } from '@/api/modules/examPaper'
 import { cn } from '@/utils/cn.ts'
 import router from '@/routers'
 
 onMounted(() => {
-  getExamList()
+  getUserExamList()
 })
 
 //获取考试列表
 const examList = ref([])
-const getExamList = async () => {
-  const { data } = await getExamPaperByConditionApi({ isPublished: 1 })
-
+const getUserExamList = async () => {
+  console.log('你无敌了')
+  const { data } = await getUserExamListApi()
   examList.value = data
 }
 

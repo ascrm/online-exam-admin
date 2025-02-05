@@ -25,6 +25,9 @@ export const useExamStore = defineStore({
         this.temporaryQuestions.splice(index, 1, question)
       }
     },
+    clearTemporaryQuestions() {
+      this.temporaryQuestions = []
+    },
   },
   persist: piniaPersistConfig('exam'),
 })

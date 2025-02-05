@@ -1,14 +1,14 @@
 <!-- @format -->
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, onUnmounted, ref } from 'vue'
 import { Finished } from '@element-plus/icons-vue'
 import examOptionItem from './components/examOptionItem.vue'
 import { addHistoryExamApi, getHistoryExamQuestionsApi, submitAnswerApi } from '@/api/modules/historyExam'
 import router from '@/routers'
 import { useExamStore } from '@/stores/modules/exam'
 import { cn } from '@/utils/cn'
-import { ElMessage, ElNotification } from 'element-plus'
+import { ElMessageBox, ElNotification } from 'element-plus'
 
 interface QuestionProp {
   id: number
@@ -47,17 +47,30 @@ const activeItem = ref<Partial<QuestionProp>>({})
 const examStore = useExamStore()
 const examPaper = ref<Partial<ExamPaperProp>>({})
 onMounted(async () => {
+  // 监听浏览器的 `beforeunload` 事件，防止页面刷新或回退
+  window.addEventListener('beforeunload', handleBeforeUnload)
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
-  addHistoryExam()
   getHistoryExamQuestions()
-  // totalSeconds = (examPaper.value.duration as number) * 60
-  totalSeconds = 302
+  totalSeconds = (examPaper.value.duration as number) * 60
   interval = setInterval(updateTimer, 1000) // 每秒更新一次倒计时
   updateTimer() // 初次调用以显示初始时间
 })
 
+// 提供给 `beforeunload` 事件的回调
+const handleBeforeUnload = event => {
+  // 你可以自定义这个消息
+  const message = '你确定要离开吗？所有未保存的进度将丢失。'
+
+  event.returnValue = message // 现代浏览器需要返回这个值
+  return message // 为了兼容旧浏览器
+}
+
+//组件销毁时清除定时器并且提交试卷
 onUnmounted(() => {
   clearInterval(interval) // 清理定时器，避免内存泄漏
+  // 在组件卸载时移除 `beforeunload` 事件监听器
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+  routerPushHandler()
 })
 
 //新建历史记录
@@ -70,15 +83,11 @@ const singleList = ref<any[]>([])
 const multipleList = ref<any[]>([])
 const judgeList = ref<any[]>([])
 const getHistoryExamQuestions = async () => {
-  let questionList = examStore.getTemporaryQuestions
-  if (questionList.length === 0) {
-    const { data } = await getHistoryExamQuestionsApi({ examPaperId: examPaper.value.id })
-    questionList = data as any[]
-  }
-  singleList.value = questionList.filter(item => item.questionType === 1)
-  multipleList.value = questionList.filter(item => item.questionType === 2)
-  judgeList.value = questionList.filter(item => item.questionType === 3)
-  examStore.setTemporaryQuestions(questionList)
+  const { data }: any = await getHistoryExamQuestionsApi({ examPaperId: examPaper.value.id })
+  singleList.value = data.filter(item => item.questionType === 1)
+  multipleList.value = data.filter(item => item.questionType === 2)
+  judgeList.value = data.filter(item => item.questionType === 3)
+  examStore.setTemporaryQuestions(data)
 }
 
 //提交答案
@@ -131,6 +140,8 @@ const routerPushHandler = async () => {
   const questions = examStore.getTemporaryQuestions
   const params = questions.map(item => ({ examPaperId: examPaper.value.id, questionId: item.id, ...item }))
   await submitAnswerApi(params)
+  addHistoryExam()
+  examStore.clearTemporaryQuestions()
   router.push('/userExamList')
 }
 
@@ -168,14 +179,6 @@ const updateTimer = () => {
     routerPushHandler()
   }
   totalSeconds-- // 每秒减少一秒
-}
-
-const open = () => {
-  ElNotification({
-    title: '温馨提示',
-    message: `上传文件大小不能超过MB！`,
-    type: 'warning',
-  })
 }
 </script>
 

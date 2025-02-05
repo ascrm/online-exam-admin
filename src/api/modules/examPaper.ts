@@ -21,3 +21,6 @@ export const batchDelExamPaperApi = (params: any) => http.delete(PORT1 + `/examP
 
 //条件查询试卷列表
 export const getExamPaperByConditionApi = (params: any) => http.post(PORT1 + `/examPaper/condition`, params)
+
+//用户查询考试列表
+export const getUserExamListApi = () => http.get(PORT1 + `/examPaper/userExamList`)
