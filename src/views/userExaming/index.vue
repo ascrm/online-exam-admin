@@ -4,7 +4,7 @@
 import { onMounted, ref } from 'vue'
 import { Finished } from '@element-plus/icons-vue'
 import examOptionItem from './components/examOptionItem.vue'
-import { addHistoryExamApi, getHistoryExamQuestionsApi } from '@/api/modules/historyExam'
+import { addHistoryExamApi, getHistoryExamQuestionsApi, submitAnswerApi } from '@/api/modules/historyExam'
 import router from '@/routers'
 import { useExamStore } from '@/stores/modules/exam'
 import { cn } from '@/utils/cn'
@@ -111,11 +111,17 @@ const jumpHandler = async (type: any) => {
     changeAnswer()
   }
 }
-
 const changeAnswer = () => {
   if (activeItem.value.questionType === 1) questionAnswer.value.singleAnswer = activeItem.value.answer
   if (activeItem.value.questionType === 2) questionAnswer.value.multipleAnswer = activeItem.value.answer?.split(',')
   if (activeItem.value.questionType === 3) questionAnswer.value.judgeAnswer = activeItem.value.answer
+}
+
+const routerPushHandler = async () => {
+  const questions = examStore.getTemporaryQuestions
+  const params = questions.map(item => ({ examPaperId: examPaper.value.id, questionId: item.id, ...item }))
+  await submitAnswerApi(params)
+  console.log('你无敌了')
 }
 </script>
 
@@ -129,7 +135,7 @@ const changeAnswer = () => {
         </div>
         <div class="flex gap-16">
           <div>考试时间：{{ examPaper.duration }}</div>
-          <div><el-button @click="router.push('/userExamList')" size="large" type="primary">提交试卷</el-button></div>
+          <div><el-button @click="routerPushHandler" size="large" type="primary">提交试卷</el-button></div>
         </div>
       </div>
     </div>
