@@ -46,14 +46,27 @@ const changeActiveIndex = item => {
         :key="index"
         @click="changeActiveIndex(item)"
       >
-        <div :class="item.answer && 'hidden'">
-          {{ index + 1 }}
+        <div
+          :class="
+            cn(
+              'group hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-green-300',
+              item.correct && 'flex',
+            )
+          "
+        >
+          <div class="hidden group-hover:block">{{ index + 1 }}</div>
+          <el-icon class="text-green-600 group-hover:hidden"><Select /></el-icon>
         </div>
-        <div :class="'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-green-300'">
-          <el-icon class="text-green-600"><Select /></el-icon>
-        </div>
-        <div :class="'hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-red-300'">
-          <el-icon class="text-red-600"><CloseBold /></el-icon>
+        <div
+          :class="
+            cn(
+              'group hidden h-[100%] w-[100%] items-center justify-center rounded-md bg-red-300',
+              !item.correct && 'flex',
+            )
+          "
+        >
+          <div class="hidden group-hover:block">{{ index + 1 }}</div>
+          <el-icon class="text-red-600 group-hover:hidden"><CloseBold /></el-icon>
         </div>
       </div>
     </div>
