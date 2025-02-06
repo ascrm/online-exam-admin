@@ -14,3 +14,6 @@ export const getHistoryExamQuestionApi = (params: any) => http.get(PORT1 + `/his
 
 //查询历史记录列表
 export const getHistoryExamQuestionsApi = (params: any) => http.get(PORT1 + `/historyExamQuestions`, params)
+
+//查询已经考过的试卷的记录
+export const getHistoryExamListApi = (params: any) => http.get(PORT1 + `/historyExams`, params)

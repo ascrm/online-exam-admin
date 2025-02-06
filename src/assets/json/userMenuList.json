@@ -42,6 +42,34 @@
         "isAffix": false,
         "isKeepAlive": false
       }
+    },
+    {
+      "path": "/historyExam",
+      "name": "historyExam",
+      "component": "/historyExam/index",
+      "meta": {
+        "icon": "Menu",
+        "title": "历史记录",
+        "isLink": "",
+        "isHide": false,
+        "isFull": false,
+        "isAffix": false,
+        "isKeepAlive": false
+      }
+    },
+    {
+      "path": "/historyExamInfo",
+      "name": "historyExamInfo",
+      "component": "/historyExamInfo/index",
+      "meta": {
+        "icon": "Menu",
+        "title": "考试详情",
+        "isLink": "",
+        "isHide": true,
+        "isFull": true,
+        "isAffix": false,
+        "isKeepAlive": false
+      }
     }
   ],
   "msg": "请求成功"

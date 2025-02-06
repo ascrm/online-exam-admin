@@ -1,14 +1,13 @@
 <!-- @format -->
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { Finished } from '@element-plus/icons-vue'
-import examOptionItem from './components/examOptionItem.vue'
-import { addHistoryExamApi, getHistoryExamQuestionsApi, submitAnswerApi } from '@/api/modules/historyExam'
+import { getHistoryExamQuestionsApi } from '@/api/modules/historyExam'
 import router from '@/routers'
 import { useExamStore } from '@/stores/modules/exam'
 import { cn } from '@/utils/cn'
-import { ElMessageBox, ElNotification } from 'element-plus'
+import historyExamOptionItem from './components/historyExamOptionItem.vue'
 
 interface QuestionProp {
   id: number
@@ -47,37 +46,9 @@ const activeItem = ref<Partial<QuestionProp>>({})
 const examStore = useExamStore()
 const examPaper = ref<Partial<ExamPaperProp>>({})
 onMounted(async () => {
-  // 监听浏览器的 `beforeunload` 事件，防止页面刷新或回退
-  window.addEventListener('beforeunload', handleBeforeUnload)
   examPaper.value = JSON.parse(localStorage.getItem('examPaper') as unknown as string)
-  await addHistoryExam()
   await getHistoryExamQuestions()
-  totalSeconds = (examPaper.value.duration as number) * 60
-  interval = setInterval(updateTimer, 1000) // 每秒更新一次倒计时
-  updateTimer() // 初次调用以显示初始时间
 })
-
-// 提供给 `beforeunload` 事件的回调
-const handleBeforeUnload = event => {
-  // 你可以自定义这个消息
-  const message = '你确定要离开吗？所有未保存的进度将丢失。'
-
-  event.returnValue = message // 现代浏览器需要返回这个值
-  return message // 为了兼容旧浏览器
-}
-
-//组件销毁时清除定时器并且提交试卷
-onUnmounted(() => {
-  clearInterval(interval) // 清理定时器，避免内存泄漏
-  // 在组件卸载时移除 `beforeunload` 事件监听器
-  window.removeEventListener('beforeunload', handleBeforeUnload)
-  routerPushHandler()
-})
-
-//新建历史记录
-const addHistoryExam = async () => {
-  await addHistoryExamApi({ examPaperId: examPaper.value.id })
-}
 
 //查询该用户当前试卷的所有题目历史记录
 const singleList = ref<any[]>([])
@@ -91,18 +62,11 @@ const getHistoryExamQuestions = async () => {
   examStore.setTemporaryQuestions(data)
 }
 
-//提交答案
-const submitHandler = async (question: any) => {
-  if (question.questionType === 1) question.answer = questionAnswer.value.singleAnswer
-  if (question.questionType === 2) question.answer = questionAnswer.value.multipleAnswer?.join(',')
-  if (question.questionType === 3) question.answer = questionAnswer.value.judgeAnswer
-  examStore.updateTemporaryQuestion(question)
-}
-
 //切换activeItem
 const changeActiveItem = (item: any) => {
   activeItem.value = examStore.getTemporaryQuestionById(item.id)
   changeAnswer()
+  console.log(questionAnswer.value)
   const questions = examStore.getTemporaryQuestions
   const typeQuestions = questions.filter(item => item.questionType === activeItem.value.questionType)
   const index = typeQuestions.findIndex(item => item.id === activeItem.value.id)
@@ -130,57 +94,16 @@ const jumpHandler = async (type: any) => {
     changeAnswer()
   }
 }
+
 const changeAnswer = () => {
   if (activeItem.value.questionType === 1) questionAnswer.value.singleAnswer = activeItem.value.answer
   if (activeItem.value.questionType === 2) questionAnswer.value.multipleAnswer = activeItem.value.answer?.split(',')
   if (activeItem.value.questionType === 3) questionAnswer.value.judgeAnswer = activeItem.value.answer
 }
 
-//提交试卷
+//退出详情页
 const routerPushHandler = async () => {
-  const questions = examStore.getTemporaryQuestions
-  const params = questions.map(item => ({ examPaperId: examPaper.value.id, questionId: item.id, ...item }))
-  await submitAnswerApi(params)
-  addHistoryExam()
-  // 在组件卸载时移除 `beforeunload` 事件监听器
-  window.removeEventListener('beforeunload', handleBeforeUnload)
-  router.push('/userExamList')
-}
-
-let totalSeconds
-const hours = ref(Math.floor(totalSeconds / 3600)) // 小时
-const minutes = ref(Math.floor((totalSeconds % 3600) / 60)) // 分钟
-const seconds = ref(totalSeconds % 60) // 秒
-let interval
-//倒计时功能
-const updateTimer = () => {
-  hours.value = Math.floor(totalSeconds / 3600)
-  minutes.value = Math.floor((totalSeconds % 3600) / 60)
-  seconds.value = totalSeconds % 60
-
-  if (totalSeconds == 300) {
-    ElNotification({
-      type: 'warning',
-      title: '考试提醒',
-      message: `考试时间还剩5分钟,请尽快完成试卷！`,
-      position: 'top-left',
-    })
-  }
-
-  if (totalSeconds == 10) {
-    ElNotification({
-      type: 'warning',
-      title: '考试提醒',
-      message: `考试时间还剩10秒钟,即将自动交卷`,
-      position: 'top-left',
-    })
-  }
-
-  if (totalSeconds == 0) {
-    clearInterval(interval)
-    routerPushHandler()
-  }
-  totalSeconds-- // 每秒减少一秒
+  router.push('/historyExam')
 }
 </script>
 
@@ -193,8 +116,7 @@ const updateTimer = () => {
           <div>{{ examPaper.name }}</div>
         </div>
         <div class="flex gap-16">
-          <div>考试时间：{{ hours }}:{{ minutes }}:{{ seconds }}</div>
-          <div><el-button @click="routerPushHandler" size="large" type="primary">提交试卷</el-button></div>
+          <div><el-button @click="routerPushHandler" size="large" type="danger">退出</el-button></div>
         </div>
       </div>
     </div>
@@ -206,7 +128,7 @@ const updateTimer = () => {
             <div>题数</div>
           </div>
 
-          <examOptionItem
+          <historyExamOptionItem
             @change-active-item="changeActiveItem"
             :question-list="singleList"
             :active-item="activeItem"
@@ -216,8 +138,8 @@ const updateTimer = () => {
               <el-icon><Eleme /></el-icon>
               单选题
             </template>
-          </examOptionItem>
-          <examOptionItem
+          </historyExamOptionItem>
+          <historyExamOptionItem
             @change-active-item="changeActiveItem"
             :question-list="multipleList"
             :active-item="activeItem"
@@ -227,8 +149,8 @@ const updateTimer = () => {
               <el-icon><ElementPlus /></el-icon>
               多选题
             </template>
-          </examOptionItem>
-          <examOptionItem
+          </historyExamOptionItem>
+          <historyExamOptionItem
             @change-active-item="changeActiveItem"
             :question-list="judgeList"
             :active-item="activeItem"
@@ -238,7 +160,7 @@ const updateTimer = () => {
               <el-icon><Finished /></el-icon>
               判断题
             </template>
-          </examOptionItem>
+          </historyExamOptionItem>
         </div>
       </div>
 
@@ -259,23 +181,15 @@ const updateTimer = () => {
           <div class="px-[20px] pb-[20px] text-[1.5em]">
             {{ activeItem.description }}
           </div>
-          <div
-            @change="submitHandler(activeItem)"
-            class="cursor-default pb-[20px]"
-            v-if="activeItem.questionType === 1"
-          >
-            <el-radio-group v-model="questionAnswer.singleAnswer" class="block">
+          <div class="cursor-not-allowed pb-[20px]" v-if="activeItem.questionType === 1">
+            <el-radio-group class="block" v-model="questionAnswer.singleAnswer">
               <el-radio value="A">{{ activeItem.optionA }}</el-radio>
               <el-radio value="B">{{ activeItem.optionB }}</el-radio>
               <el-radio value="C">{{ activeItem.optionC }}</el-radio>
               <el-radio value="D">{{ activeItem.optionD }}</el-radio>
             </el-radio-group>
           </div>
-          <div
-            @change="submitHandler(activeItem)"
-            class="cursor-default pb-[20px]"
-            v-if="activeItem.questionType === 2"
-          >
+          <div class="cursor-default pb-[20px]" v-if="activeItem.questionType === 2">
             <el-checkbox-group v-model="questionAnswer.multipleAnswer">
               <el-checkbox :label="activeItem.optionA" value="A" />
               <el-checkbox :label="activeItem.optionB" value="B" />
@@ -283,11 +197,7 @@ const updateTimer = () => {
               <el-checkbox :label="activeItem.optionD" value="D" />
             </el-checkbox-group>
           </div>
-          <div
-            @change="submitHandler(activeItem)"
-            class="cursor-default pb-[20px]"
-            v-if="activeItem.questionType === 3"
-          >
+          <div class="cursor-default pb-[20px]" v-if="activeItem.questionType === 3">
             <el-radio-group v-model="questionAnswer.judgeAnswer" class="block">
               <el-radio label="正确" value="T" />
               <el-radio label="错误" value="F" />
@@ -325,13 +235,21 @@ const updateTimer = () => {
   height: auto;
   padding: 20px 40px;
   text-wrap: wrap;
+  cursor: not-allowed;
+}
+:deep(.el-radio__inner) {
+  cursor: not-allowed;
 }
 .el-checkbox {
   display: flex;
   height: auto;
   padding: 20px 40px;
   text-wrap: wrap;
+  cursor: not-allowed;
 
   --el-checkbox-font-size: 16px;
+}
+:deep(.el-checkbox__inner) {
+  cursor: not-allowed;
 }
 </style>
